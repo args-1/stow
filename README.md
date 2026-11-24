@@ -6,7 +6,8 @@ Save, organize and find your links on every device. Stow is an installable web a
 
 - **Save links** with an optional custom title, notes, tags and category. Stow fetches the page title, description and favicon for you.
 - **Edit, favorite, archive and delete** links. Deleting shows an **Undo** button.
-- **Categories:** create, rename, recolor and delete color-coded categories. Links in a deleted category become uncategorized.
+- **Card grid:** links show as square cards with the site's favicon and name, the title, the category's icon, and buttons to favorite, archive, edit and delete. Phones show 2 columns and wide screens up to 6. Click anywhere else on a card to open the link.
+- **Categories:** create, rename, recolor and delete categories, and give each one an icon from a set of 40, drawn in the category's color. Links in a deleted category become uncategorized.
 - **Find links fast:** search matches titles, URLs, descriptions, notes and tags as you type. A leading `#` is ignored, so `#recipes` finds links tagged `recipes`. Switch between All, Favorites and Archive, filter by category, and sort by Newest, Oldest, A–Z or Most visited. Opening a link counts as a visit.
 - **Installable and offline:** install the web app on Android, iOS or desktop. Saved links open offline, and changes made offline sync when you reconnect.
 - **Share to Stow** on Android: the installed app appears in the share sheet.
@@ -23,9 +24,9 @@ Save, organize and find your links on every device. Stow is an installable web a
 | Monorepo | pnpm workspaces |
 | Web app | React 19, Vite, Tailwind CSS 4, Dexie (IndexedDB), vite-plugin-pwa (Workbox) |
 | Extension | WXT (Manifest V3 for Chrome and Firefox), React 19 |
-| Shared code | `@stow/core`: types, zod validation, search and sorting, the sync engine, Supabase access. `@stow/ui`: the link form, sign-in form and category picker. |
+| Shared code | `@stow/core`: types, zod validation, search and sorting, the sync engine, Supabase access. `@stow/ui`: the link form, sign-in form, category picker and category icons (lucide-react). |
 | Backend | Supabase: Postgres with row-level security, email + password auth, Realtime, one Edge Function (Deno) |
-| Tests | Vitest, Testing Library, fake-indexeddb, PGlite (runs the real SQL migration in memory) |
+| Tests | Vitest, Testing Library, fake-indexeddb, PGlite (runs the real SQL migrations in memory) |
 
 ## How sync works
 
@@ -45,9 +46,11 @@ packages/
   core/                        shared types, validation, search, sync engine, Supabase access
   ui/                          React components shared by both apps
 supabase/
-  migrations/0001_init.sql     tables, row-level security, triggers, Realtime setup
+  migrations/                  SQL to run in order in the Supabase SQL Editor
+    0001_init.sql              tables, row-level security, triggers, Realtime setup
+    0002_category_icons.sql    the category icon column
   functions/fetch-metadata/    Edge Function that reads a page's title, description and favicon
-docs/superpowers/              design spec and implementation plan
+docs/superpowers/              design specs and implementation plans
 ```
 
 The packages ship TypeScript source with no build step of their own. Vite and WXT compile them into each app.
@@ -81,10 +84,11 @@ If pnpm reports ignored build scripts (for example `sharp`, which generates the 
 
    Never use the secret key or the `service_role` key. They bypass row-level security.
 3. Open **SQL Editor**, paste the whole of `supabase/migrations/0001_init.sql`, and click **Run**. It creates the tables, the row-level security policies, the triggers, the `increment_visit` function and the Realtime publication. Nothing else needs to be switched on.
-4. Decide how new accounts are confirmed, under **Authentication → Sign In / Providers → Email**:
+4. In **SQL Editor**, start a new query, paste the whole of `supabase/migrations/0002_category_icons.sql`, and click **Run**. It adds the icon column to categories. Run each migration once, in order.
+5. Decide how new accounts are confirmed, under **Authentication → Sign In / Providers → Email**:
    - For local testing, turn off **Confirm email** and save. New accounts can sign in straight away.
    - To keep it on, set **Authentication → URL Configuration → Site URL** to where the web app runs, for example `http://localhost:5173`. After signing up, click the link in the email, then sign in to Stow with your email and password. Supabase's built-in email service only sends a few emails per hour.
-5. Optional but recommended: deploy the `fetch-metadata` Edge Function. It fetches the title, description and favicon of links added in the web app. Without it, those links show their host name as the title, with a favicon from Google's favicon service. The extension reads the title and description from the open tab, so it works either way.
+6. Optional but recommended: deploy the `fetch-metadata` Edge Function. It fetches the title, description and favicon of links added in the web app. Without it, those links show their host name as the title, with a favicon from Google's favicon service. The extension reads the title and description from the open tab, so it works either way.
 
    ```powershell
    npx supabase@3 login
@@ -119,7 +123,7 @@ The values are compiled into the apps, so restart the dev server or build again 
 ```powershell
 pnpm dev                                          # web app at http://localhost:5173
 pnpm dev:ext                                      # extension in Chrome, with hot reload
-pnpm --filter @stow/extension dev:firefox    # extension in Firefox, with hot reload
+pnpm --filter @stow/extension dev:firefox         # extension in Firefox, with hot reload
 ```
 
 In the web app, choose **Need an account? Create one** to sign up. Passwords need at least 6 characters. Use the same account in the extension.
@@ -136,11 +140,11 @@ pnpm typecheck                                                  # TypeScript in 
 npx -y deno check supabase/functions/fetch-metadata/index.ts    # the Edge Function
 ```
 
-These need no Supabase project. The database tests run the real migration in PGlite, an in-memory Postgres.
+These need no Supabase project. The database tests run the real migrations in PGlite, an in-memory Postgres.
 
 ### Live smoke test (optional)
 
-The live test checks your real project: sign-in, row-level security, saving and reading links and categories, and the Edge Function. Create `apps/web/.env.local` with a dedicated test account:
+The live test checks your real project: sign-in, row-level security, saving and reading links and categories (including category icons), and the Edge Function. Run both migrations on the project first ([Supabase setup](#2-supabase-setup), items 3 and 4). Create `apps/web/.env.local` with a dedicated test account:
 
 ```text
 SMOKE_EMAIL=you+stow-smoke@example.com
@@ -247,16 +251,28 @@ Firefox removes temporary add-ons when it restarts, so load it again after a res
 - To change the shortcut, open `chrome://extensions/shortcuts`, or in Firefox `about:addons` → ⚙ → **Manage Extension Shortcuts**.
 - To debug, open the background worker's console: in Chrome, click **service worker** on the Stow card in `chrome://extensions`; in Firefox, click **Inspect** on the add-on in `about:debugging`.
 
+## Upgrading from Linkstash
+
+Stow used to be called Linkstash. To update an existing Linkstash setup:
+
+1. **Before** updating the apps, run `supabase/migrations/0002_category_icons.sql` in your Supabase project's SQL Editor ([Supabase setup](#2-supabase-setup), item 4). Until it has run, category changes wait on the device as **pending**.
+2. Get the new code, then run `pnpm install` and `pnpm build`. The `.env` files stay as they are.
+3. **Web app:** open it as usual; you stay signed in. The first time Stow opens in a browser, it copies that browser's Linkstash data into its own storage, including changes that haven't synced yet, then deletes the old copy. Existing categories get the folder icon; choose another under **Manage categories**.
+   - An installed app shows the new name once the browser refreshes the app's details. On iOS, the Home Screen keeps the name the app was added with. To change it, open the app once while online so its changes sync, then remove it and add it again.
+4. **Chrome and Edge:** click the reload icon on the extension's card in `chrome://extensions` (or `edge://extensions`). You stay signed in.
+5. **Firefox:** the add-on id changed from `linkstash@example.com` to `stow@example.com`, so Firefox treats Stow as a different add-on. In `about:debugging#/runtime/this-firefox`, click **Remove** on Linkstash, load `apps/extension/.output/firefox-mv3/manifest.json` as described in [Firefox](#firefox), and sign in again.
+
 ## Troubleshooting
 
 | Problem | Fix |
 | --- | --- |
 | The app or the popup says **Connect Stow to Supabase** | The `.env` file is missing or incomplete; see [Configure the apps](#3-configure-the-apps). Restart `pnpm dev`, or build again, after editing it. |
-| Sign-up says "Check your email to confirm your account, then sign in." | Click the link in the email, then sign in. Or turn off **Confirm email** (Supabase setup, item 4). |
+| Sign-up says "Check your email to confirm your account, then sign in." | Click the link in the email, then sign in. Or turn off **Confirm email** (Supabase setup, item 5). |
 | "Invalid API key", or every request fails with 401 | The key is wrong or comes from a different project than the URL. Use the publishable key, or the legacy anon key, from the same project. |
 | pnpm warns about ignored build scripts | Run `pnpm approve-builds`, approve them, then run `pnpm install`. |
-| Links added in the web app only show the host name | The `fetch-metadata` Edge Function isn't deployed (Supabase setup, item 5). If it is, look in the dashboard under **Edge Functions → fetch-metadata → Logs**. If the function returns 401, it was deployed without `--no-verify-jwt`; deploy it again with the flag. Some sites block automated requests, so a few links never get a title. |
+| Links added in the web app only show the host name | The `fetch-metadata` Edge Function isn't deployed (Supabase setup, item 6). If it is, look in the dashboard under **Edge Functions → fetch-metadata → Logs**. If the function returns 401, it was deployed without `--no-verify-jwt`; deploy it again with the flag. Some sites block automated requests, so a few links never get a title. |
 | A change doesn't show up on another device | Look at the badge in the header. **N pending** means the change hasn't reached the server yet; it syncs once the device is online. Switching back to the app also starts a sync. |
+| After an update, the header keeps showing **N pending**, and category changes don't reach other devices | Migration 0002 hasn't run on the database. Run `supabase/migrations/0002_category_icons.sql` in the SQL Editor (Supabase setup, item 4). The waiting changes are kept and sync on the next attempt, within a minute, or straight away when you reload the app. |
 | `vite preview` answers "Blocked request. This host is not allowed." | Add the tunnel's host name to `preview.allowedHosts` in `apps/web/vite.config.ts`. |
 | The popup says "Stow can only save web pages (http and https)." | Browser pages such as `chrome://…` and `about:…` can't be saved. |
 | A context-menu save shows a red ✕ | Hover over the icon to see the reason. Usually you are signed out: open the popup and sign in. |
