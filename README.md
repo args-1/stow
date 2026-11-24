@@ -255,8 +255,8 @@ Firefox removes temporary add-ons when it restarts, so load it again after a res
 
 Stow used to be called Linkstash. To update an existing Linkstash setup:
 
-1. **Before** updating the apps, run `supabase/migrations/0002_category_icons.sql` in your Supabase project's SQL Editor ([Supabase setup](#2-supabase-setup), item 4). Until it has run, category changes wait on the device as **pending**.
-2. Get the new code, then run `pnpm install` and `pnpm build`. The `.env` files stay as they are.
+1. Get the new code. **Before** you build or open any of the apps, run `supabase/migrations/0002_category_icons.sql` in your Supabase project's SQL Editor ([Supabase setup](#2-supabase-setup), item 4). Until it has run, category changes wait on the device as **pending**.
+2. Run `pnpm install` and `pnpm build`. The `.env` files stay as they are.
 3. **Web app:** open it as usual; you stay signed in. The first time Stow opens in a browser, it copies that browser's Linkstash data into its own storage, including changes that haven't synced yet, then deletes the old copy. Existing categories get the folder icon; choose another under **Manage categories**.
    - An installed app shows the new name once the browser refreshes the app's details. On iOS, the Home Screen keeps the name the app was added with. To change it, open the app once while online so its changes sync, then remove it and add it again.
 4. **Chrome and Edge:** click the reload icon on the extension's card in `chrome://extensions` (or `edge://extensions`). You stay signed in.
