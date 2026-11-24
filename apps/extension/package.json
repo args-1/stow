@@ -1,0 +1,32 @@
+{
+  "name": "@linkstash/extension",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wxt",
+    "dev:firefox": "wxt -b firefox --mv3",
+    "build": "wxt build && wxt build -b firefox --mv3",
+    "test": "vitest run",
+    "typecheck": "wxt prepare && tsc -p .",
+    "postinstall": "wxt prepare"
+  },
+  "dependencies": {
+    "@linkstash/core": "workspace:*",
+    "@linkstash/ui": "workspace:*",
+    "lucide-react": "^1.78.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19",
+    "@wxt-dev/auto-icons": "^2.0.0",
+    "@wxt-dev/module-react": "^1.2.2",
+    "tailwindcss": "^4.3.5",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.1",
+    "wxt": "^0.21.5"
+  }
+}
