@@ -30,20 +30,33 @@ const NAMED_ENTITIES: Record<string, string> = {
 function decodeEntities(text: string): string {
   return text.replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);/gi, (match, code: string) => {
     const c = code.toLowerCase();
-    try {
-      if (c.startsWith('#x')) return String.fromCodePoint(parseInt(c.slice(2), 16));
-      if (c.startsWith('#')) return String.fromCodePoint(parseInt(c.slice(1), 10));
-    } catch {
-      return match; // out-of-range code point
+    if (c.startsWith('#')) {
+      const codePoint = c.startsWith('#x') ? parseInt(c.slice(2), 16) : parseInt(c.slice(1), 10);
+      // As in HTML: NUL and surrogate references become U+FFFD. Postgres can't store either.
+      if (codePoint === 0 || (codePoint >= 0xd800 && codePoint <= 0xdfff)) return '\uFFFD';
+      try {
+        return String.fromCodePoint(codePoint);
+      } catch {
+        return match; // out-of-range code point
+      }
     }
     return NAMED_ENTITIES[c] ?? match;
   });
 }
 
+// Lone surrogates and NUL in the page text itself get the same treatment. Pairs are kept.
+const UNSTORABLE = /[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDFFF\0]/g;
+
 function cleanText(raw: string | undefined, max: number): string | null {
   if (!raw) return null;
-  const text = decodeEntities(raw).replace(/\s+/g, ' ').trim();
-  return text ? text.slice(0, max) : null;
+  const text = decodeEntities(raw)
+    .replace(UNSTORABLE, (m) => (m.length === 2 ? m : '\uFFFD'))
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (!text) return null;
+  const cut = text.slice(0, max);
+  // Never end on half of a surrogate pair.
+  return /[\uD800-\uDBFF]$/.test(cut) ? cut.slice(0, -1) : cut;
 }
 
 const ATTR_RE = /([^\s"'<>/=]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+)))?/g;

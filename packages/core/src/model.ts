@@ -1,4 +1,8 @@
 import { z } from 'zod';
+
+// No `new Function` probe: the extension's MV3 CSP forbids eval, and zod would otherwise try it once.
+z.config({ jitless: true });
+
 import { CATEGORY_COLORS, type Category, type Link } from './schema';
 import { dedupeKey, hostname, isHttpUrl, normalizeUrl } from './url';
 
@@ -65,9 +69,23 @@ const linkInputSchema = z.object({
   faviconUrl: z.string().nullish(),
 });
 
+// Postgres rejects text holding a lone UTF-16 surrogate or NUL, and a rejected write is dropped as fatal.
+const UNSTORABLE = /[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDFFF\0]/g;
+
+/** Replaces lone surrogates and NUL with U+FFFD, keeping valid surrogate pairs. */
+function storableText(text: string): string {
+  return text.replace(UNSTORABLE, (m) => (m.length === 2 ? m : '\uFFFD'));
+}
+
+/** `slice(0, max)` for well-formed text that never cuts a surrogate pair in half. */
+function sliceWhole(text: string, max: number): string {
+  const cut = text.slice(0, max);
+  return /[\uD800-\uDBFF]$/.test(cut) ? cut.slice(0, -1) : cut;
+}
+
 function clip(value: string | null | undefined, max: number): string | null {
   const text = value?.replace(/\s+/g, ' ').trim();
-  return text ? text.slice(0, max) : null;
+  return text ? sliceWhole(storableText(text), max) : null;
 }
 
 /** Sanitizes metadata from a tab or the Edge Function: collapse whitespace, clip, http-only favicon. */
@@ -82,13 +100,15 @@ export function cleanMetadata(meta: PageMetadataInput): CleanMetadata {
 export function normalizeTags(tags: readonly string[]): string[] {
   const out: string[] = [];
   for (const raw of tags) {
-    const tag = raw
-      .trim()
-      .replace(/^#+/, '')
-      .trim()
-      .toLowerCase()
-      .replace(/\s+/g, '-')
-      .slice(0, LIMITS.tag);
+    const tag = sliceWhole(
+      storableText(raw)
+        .trim()
+        .replace(/^#+/, '')
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, '-'),
+      LIMITS.tag,
+    );
     if (tag && !out.includes(tag)) out.push(tag);
   }
   return out;

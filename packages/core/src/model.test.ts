@@ -20,6 +20,11 @@ import {
 import { CATEGORY_COLORS } from './schema';
 
 const T0 = '2026-01-01T00:00:00.000Z';
+const EMOJI = '\u{1F600}'; // two UTF-16 code units
+
+/** Postgres rejects text holding a lone surrogate or NUL. */
+const storable = (text: string | null) =>
+  !/[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]|\0/.test(text ?? '');
 const clock = (now = T0, id = 'id-1'): Clock => ({ now: () => now, id: () => id });
 
 function parsed(input: LinkInput) {
@@ -34,6 +39,11 @@ describe('normalizeTags / parseTagString', () => {
   });
   it('splits a comma-separated string', () => {
     expect(parseTagString('a, B ,#c,,a')).toEqual(['a', 'b', 'c']);
+  });
+  it('never splits an emoji at the length limit or keeps a lone surrogate', () => {
+    const tags = normalizeTags([`${'a'.repeat(39)}${EMOJI}`, `${'b'.repeat(38)}${EMOJI}`, 'x\uD800y']);
+    expect(tags).toEqual(['a'.repeat(39), `${'b'.repeat(38)}${EMOJI}`, 'x\uFFFDy']);
+    expect(tags.every(storable)).toBe(true);
   });
 });
 
@@ -78,6 +88,16 @@ describe('parseLinkInput', () => {
 });
 
 describe('cleanMetadata', () => {
+  it('clips without splitting an emoji and replaces lone surrogates and NUL', () => {
+    const clean = cleanMetadata({
+      title: `${'t'.repeat(299)}${EMOJI}tail`,
+      description: `\uDE00 a\0b ${'d'.repeat(990)}${EMOJI}`,
+    });
+    expect(clean.title).toBe('t'.repeat(299));
+    expect(clean.description).toBe(`\uFFFD a\uFFFDb ${'d'.repeat(990)}${EMOJI}`);
+    expect(storable(clean.title) && storable(clean.description)).toBe(true);
+    expect(cleanMetadata({ title: 'end \uD83D' }).title).toBe('end \uFFFD');
+  });
   it('keeps http favicons and nulls empty strings', () => {
     expect(cleanMetadata({ title: '  ', description: null, faviconUrl: 'https://a.io/f.ico' })).toEqual({
       title: null,

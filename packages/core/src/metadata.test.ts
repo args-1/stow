@@ -50,6 +50,18 @@ describe('parseHtmlMetadata', () => {
     expect(meta.description).toHaveLength(1000);
   });
 
+  it('turns surrogate and NUL references into U+FFFD and never splits an emoji when clipping', () => {
+    const html =
+      `<title>&#xD800;x&#56832;&#0; \uD83D</title>` +
+      `<meta name="description" content="${'d'.repeat(999)}&#x1F600;">`;
+    const meta = parseHtmlMetadata(html, page);
+    expect(meta.title).toBe('\uFFFDx\uFFFD\uFFFD \uFFFD');
+    expect(meta.description).toBe('d'.repeat(999));
+    expect(parseHtmlMetadata(`<title>${'t'.repeat(298)}\u{1F600}</title>`, page).title).toBe(
+      `${'t'.repeat(298)}\u{1F600}`,
+    );
+  });
+
   it('returns null text fields for an empty document', () => {
     expect(parseHtmlMetadata('', page)).toEqual({
       title: null,
