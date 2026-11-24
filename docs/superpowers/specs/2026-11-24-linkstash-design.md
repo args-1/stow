@@ -1,7 +1,7 @@
 # Linkstash — Cross-Platform Bookmark & Link Manager — Design
 
 Date: 2026-11-24
-Status: Approved (brainstorming), pending spec review
+Status: Approved
 
 ## 1. Goal
 
@@ -26,23 +26,26 @@ vice versa via Supabase cloud sync.
 
 ```
 linkstash/ (repo root)
-├─ package.json, pnpm-workspace.yaml, tsconfig.base.json, .env.example
+├─ package.json, pnpm-workspace.yaml, tsconfig.base.json
 ├─ packages/
 │  ├─ core/                      # pure TS; no DOM, no React
 │  │  └─ src/
-│  │     ├─ schema.ts            # zod schemas + TS types: Link, Category, Mutation, inputs
+│  │     ├─ schema.ts            # TS types: Link, Category, Mutation, OutboxEntry, CATEGORY_COLORS
+│  │     ├─ model.ts             # zod input schemas, createLink/updateLink, tags, categories
 │  │     ├─ url.ts               # normalizeUrl, dedupeKey, hostname, faviconFallback
-│  │     ├─ query.ts             # filterLinks (search/category/view), sortLinks
-│  │     ├─ remote.ts            # Remote interface + SupabaseRemote implementation
+│  │     ├─ query.ts             # queryLinks (search/category/view + sort), findByUrl
+│  │     ├─ remote.ts            # Remote interface + RemoteError
+│  │     ├─ supabase-remote.ts   # SupabaseRemote implementation
 │  │     ├─ local.ts             # LocalStore interface + MemoryLocalStore (tests)
 │  │     ├─ sync.ts              # SyncEngine(local, remote)
-│  │     └─ supabase.ts          # createLinkstashClient(url, anonKey, storageAdapter?)
+│  │     ├─ supabase.ts          # createLinkstashClient(url, anonKey, storageAdapter?)
+│  │     └─ metadata-client.ts   # fetchMetadata via the Edge Function
 │  └─ ui/                        # shared React components (Tailwind classes)
-│     └─ src/ LinkForm, CategoryPicker, TagInput, ColorDot, AuthForm
+│     └─ src/ LinkForm (incl. comma-separated tags field), CategoryPicker, ColorDot, AuthForm
 ├─ apps/
-│  ├─ web/                       # PWA
-│  │  └─ src/ db.ts (Dexie LocalStore), sync/, pages/, components/, sw via vite-plugin-pwa
-│  └─ extension/                 # WXT
+│  ├─ web/                       # PWA (.env / .env.example: VITE_*)
+│  │  └─ src/ db.ts (Dexie LocalStore), sync/, components/, sw via vite-plugin-pwa
+│  └─ extension/                 # WXT (.env / .env.example: WXT_*)
 │     └─ entrypoints/ popup/, background.ts
 └─ supabase/
    ├─ migrations/0001_init.sql
@@ -75,7 +78,8 @@ Unit boundaries:
 |---|---|---|
 | id | uuid PK | client-generated |
 | user_id | uuid | as above |
-| url | text | as entered (http/https only) |
+| url | text | normalized (http/https only) |
+| url_key | text | `dedupeKey(url)`, computed by clients; used for duplicate lookup |
 | title | text | fetched page title (fallback: hostname) |
 | custom_title | text null | user override; display title = custom_title ?? title |
 | description | text null | meta/og description |
@@ -95,11 +99,12 @@ Server-side objects:
 - Trigger on `categories`: when `deleted_at` becomes non-null, set `category_id = null` on that user's links.
 - RPC `increment_visit(link_id uuid)` (security invoker): `visit_count += 1`, `last_visited_at = now()`.
 - Both tables added to the `supabase_realtime` publication.
-- Indexes: `(user_id, updated_at)` on both tables.
+- Indexes: `(user_id, updated_at)` on both tables; `(user_id, url_key) where deleted_at is null` on links.
 
-Duplicates: no DB uniqueness constraint. Clients check `dedupeKey(url)` (normalized: lowercase host,
-strip `www.`, default ports, trailing slash, fragment, and `utm_*`/`fbclid`/`gclid` params) against
-known links; on match, the UI opens the existing link for editing instead of creating a new one.
+Duplicates: no DB uniqueness constraint. Clients compute `dedupeKey(url)` (scheme ignored; lowercase
+host, strip `www.`, trailing slashes, fragment, and `utm_*`/`fbclid`/`gclid`/`mc_cid`/`mc_eid`
+params) and store it as `url_key`. The PWA checks its local store; the extension queries
+`url_key` on the server. On match, the UI opens the existing link instead of creating a new one.
 
 ## 5. Sync (PWA)
 
@@ -110,13 +115,15 @@ known links; on match, the UI opens the existing link for editing instead of cre
   with `deleted_at` set.
 - Flush: replay outbox in order; remove each entry on success. On network failure stop and retry with
   exponential backoff (1s → 60s cap). On non-retryable error (4xx other than 401/408/429) drop the
-  entry and surface a toast. On 401 sign the user out (outbox retained for the same user).
+  entry and surface a toast. On 401 try `auth.refreshSession()`; if that fails, sign out locally
+  (`signOut({ scope: 'local' })`) and show the sign-in screen, keeping Dexie data and the outbox.
 - Pull: `select * from X where updated_at > cursor - 5s order by updated_at` (tombstones included),
   merged into Dexie. A pulled row overwrites local unless a pending outbox mutation exists for the
   same id (local pending change wins until pushed; the server then applies last-write-wins by arrival).
   Cursor = max pulled `updated_at`.
 - Triggers: app start, sign-in, window focus, `online` event, Realtime change event, 60s interval.
-- Sign-out clears Dexie (prevents data leaking between accounts).
+- Dexie stores its owner user id in `meta`. Explicit sign-out clears Dexie; signing in as a different
+  user than the stored owner also clears it first (prevents data leaking between accounts).
 
 ## 6. Metadata fetching
 
@@ -153,7 +160,8 @@ PWA configuration (`vite-plugin-pwa`, `generateSW`):
 ## 8. Browser extension
 
 - WXT, React popup reusing `packages/ui`. Targets: `chrome-mv3` and `firefox-mv3` (Firefox ≥ 115).
-- Permissions: `activeTab`, `scripting`, `contextMenus`, `storage`; host permission for the Supabase URL.
+- Permissions: `activeTab`, `scripting`, `contextMenus`, `storage`. No host permissions: the Supabase
+  API sends CORS headers, so extension pages can call it directly.
 - Popup: sign-in form if no session. Otherwise prefilled form (title, URL, favicon, description),
   category select, tags, notes, Save. If the URL's dedupe key already exists, show "Saved ✓" with
   edit/favorite/delete options instead.
@@ -161,26 +169,35 @@ PWA configuration (`vite-plugin-pwa`, `generateSW`):
   saves without a category and flashes a ✓/✕ badge on the action icon.
 - Keyboard shortcut: `Alt+Shift+S` opens the popup.
 - Auth session persisted in `chrome.storage.local` via a supabase-js storage adapter.
-- Supabase URL / anon key injected at build time from `.env` (`WXT_SUPABASE_URL`, `WXT_SUPABASE_ANON_KEY`).
+- Supabase URL / anon key injected at build time from `apps/extension/.env` (`WXT_SUPABASE_URL`,
+  `WXT_SUPABASE_ANON_KEY`, optional `WXT_APP_URL` for the "Open Linkstash" link).
 
 ## 9. Configuration
 
-`.env` at repo root (gitignored), mirrored to `.env.example`:
+Per-app `.env` files (gitignored), each mirrored by a committed `.env.example`:
 ```
+# apps/web/.env
 VITE_SUPABASE_URL=...
 VITE_SUPABASE_ANON_KEY=...
+
+# apps/extension/.env
 WXT_SUPABASE_URL=...
 WXT_SUPABASE_ANON_KEY=...
+WXT_APP_URL=http://localhost:5173   # optional
 ```
+The live smoke test reads `SMOKE_EMAIL` / `SMOKE_PASSWORD` (and optional `SMOKE_EDGE=1`) from
+`apps/web/.env.local`.
+
 Setup: create Supabase project → run `supabase/migrations/0001_init.sql` in SQL editor → (optional)
-`npx supabase functions deploy fetch-metadata --use-api` → disable "Confirm email" for quick local
-testing (optional) → fill `.env`.
+`npx supabase functions deploy fetch-metadata --project-ref <ref> --use-api` → disable "Confirm
+email" for quick local testing (optional) → fill both `.env` files.
 
 ## 10. Error handling
 
 - All inputs validated with zod in `core` (URL must be http/https; name lengths; color hex).
 - Network/sync errors: outbox retains mutations; backoff retry; toast on persistent failure.
-- Auth expiry → sign-in screen. Extension shows inline errors (offline, auth, validation).
+- Auth expiry → refresh attempt, then sign-in screen (local data kept). Extension shows inline errors
+  (offline, auth, validation).
 
 ## 11. Testing
 
