@@ -7,7 +7,7 @@ const DEFAULT_PAGE_SIZE = 1000;
 /** The part of a supabase-js query result this module reads. */
 interface QueryResult {
   data: unknown;
-  error: { message: string } | null;
+  error: { message: string; code?: string } | null;
   status: number;
 }
 
@@ -19,7 +19,7 @@ async function run(operation: string, query: PromiseLike<QueryResult>): Promise<
   } catch (error) {
     throw new RemoteError(`${operation}: ${error instanceof Error ? error.message : String(error)}`, 0);
   }
-  if (result.error) throw new RemoteError(`${operation}: ${result.error.message}`, result.status);
+  if (result.error) throw new RemoteError(`${operation}: ${result.error.message}`, result.status, result.error.code);
   return result.data;
 }
 

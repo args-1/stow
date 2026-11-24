@@ -28,6 +28,8 @@ describe('errorKind', () => {
     for (const s of [0, 408, 429, 500, 503]) expect(errorKind(new RemoteError('x', s)), String(s)).toBe('retryable');
     for (const s of [400, 403, 404, 409, 422]) expect(errorKind(new RemoteError('x', s)), String(s)).toBe('fatal');
     expect(errorKind(new TypeError('boom'))).toBe('retryable');
+    expect(errorKind(new RemoteError('x', 400, 'PGRST204'))).toBe('retryable');
+    expect(errorKind(new RemoteError('x', 400, '23514'))).toBe('fatal');
   });
 });
 
@@ -86,6 +88,19 @@ describe('SyncEngine.sync pushing', () => {
     expect(remote.links.has(a.id)).toBe(false);
     expect(remote.links.has(b.id)).toBe(true);
     expect(await local.peekOutbox()).toEqual([]);
+  });
+
+  it('keeps a category the server cannot store yet because migration 0002 has not run', async () => {
+    const cat = makeCategory({ icon: 'briefcase' });
+    await engine.saveCategory(cat);
+    remote.failNext(new RemoteError("Could not find the 'icon' column of 'categories' in the schema cache", 400, 'PGRST204'));
+
+    expect(await engine.sync()).toBe('retry');
+    expect(fatal).not.toHaveBeenCalled();
+    expect(await pendingIds()).toEqual([cat.id]);
+
+    expect(await engine.sync()).toBe('ok');
+    expect(remote.categories.get(cat.id)?.icon).toBe('briefcase');
   });
 
   it('never pushes an entry that was removed from the outbox mid-flush', async () => {

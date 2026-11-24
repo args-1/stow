@@ -3,6 +3,10 @@ import { PGlite } from '@electric-sql/pglite';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 const MIGRATION = readFileSync(new URL('../../../supabase/migrations/0001_init.sql', import.meta.url), 'utf8');
+const MIGRATION_0002 = readFileSync(
+  new URL('../../../supabase/migrations/0002_category_icons.sql', import.meta.url),
+  'utf8',
+);
 
 /** The pieces of a Supabase database that the migration relies on. */
 const SUPABASE_STUBS = `
@@ -23,6 +27,7 @@ const ALICE = '00000000-0000-4000-8000-00000000000a';
 const BOB = '00000000-0000-4000-8000-00000000000b';
 const CAT = '10000000-0000-4000-8000-000000000001';
 const LINK = '20000000-0000-4000-8000-000000000001';
+const FRESH = '10000000-0000-4000-8000-000000000002';
 
 let db: PGlite;
 
@@ -147,5 +152,45 @@ describe('0001_init.sql', () => {
       `select tablename from pg_publication_tables where pubname = 'supabase_realtime' order by tablename`,
     );
     expect(tables.map((t) => t.tablename)).toEqual(['categories', 'links']);
+  });
+});
+
+describe('0002_category_icons.sql', () => {
+  let catUpdatedAt: Date;
+
+  beforeAll(async () => {
+    [{ updated_at: catUpdatedAt }] = await rows<{ updated_at: Date }>(
+      'select updated_at from public.categories where id = $1',
+      [CAT],
+    );
+    await db.exec(MIGRATION_0002);
+  });
+
+  it('gives existing categories the folder icon without touching updated_at', async () => {
+    const [cat] = await rows<{ icon: string; updated_at: Date }>(
+      'select icon, updated_at from public.categories where id = $1',
+      [CAT],
+    );
+    expect(cat.icon).toBe('folder');
+    expect(cat.updated_at.getTime()).toBe(catUpdatedAt.getTime());
+  });
+
+  it('defaults new categories to folder and stores the icon the client sends', async () => {
+    await as(ALICE, async () => {
+      await db.query(`insert into public.categories (id, name, color) values ($1, 'Fresh', '#3b82f6')`, [FRESH]);
+      expect(await rows('select icon from public.categories where id = $1', [FRESH])).toEqual([{ icon: 'folder' }]);
+      await db.query(`update public.categories set icon = 'briefcase' where id = $1`, [FRESH]);
+      expect(await rows('select icon from public.categories where id = $1', [FRESH])).toEqual([{ icon: 'briefcase' }]);
+    });
+  });
+
+  it.each(['Bad Icon', 'a'.repeat(41), ''])('rejects the icon name %j', async (icon) => {
+    await expect(
+      as(ALICE, () =>
+        db.query(`insert into public.categories (id, name, color, icon) values (gen_random_uuid(), 'X', '#3b82f6', $1)`, [
+          icon,
+        ]),
+      ),
+    ).rejects.toThrow(/categories_icon_format/);
   });
 });

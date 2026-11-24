@@ -152,7 +152,21 @@ describe('SupabaseRemote errors', () => {
     expect(error).toBeInstanceOf(RemoteError);
     expect((error as RemoteError).status).toBe(status);
     expect((error as RemoteError).message).toContain('boom');
+    expect((error as RemoteError).code).toBe('X');
     expect(errorKind(error)).toBe(kind);
+  });
+
+  it('passes the PostgREST error code through, so a missing column is retried', async () => {
+    const { client } = fakeSupabase({
+      status: 400,
+      body: { code: 'PGRST204', message: "Could not find the 'icon' column of 'categories' in the schema cache" },
+    });
+
+    const error = await new SupabaseRemote(client).upsertCategory(makeCategory()).catch((e: unknown) => e);
+
+    expect(error).toBeInstanceOf(RemoteError);
+    expect((error as RemoteError).code).toBe('PGRST204');
+    expect(errorKind(error)).toBe('retryable');
   });
 
   it('reports a network failure as status 0, which is retryable', async () => {
