@@ -5,3 +5,6 @@ export * from './query';
 export * from './local';
 export * from './remote';
 export * from './sync';
+export * from './supabase';
+export * from './supabase-remote';
+export * from './metadata-client';
