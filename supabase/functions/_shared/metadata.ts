@@ -59,7 +59,23 @@ function tagAttributes(tag: string): Record<string, string> {
 }
 
 function tags(head: string, name: string): Record<string, string>[] {
-  return [...head.matchAll(new RegExp(`<${name}\\b[^>]*>`, 'gi'))].map((m) => tagAttributes(m[0]));
+  // Ending at `$` too keeps this linear: an unclosed tag would otherwise rescan to end-of-input for every
+  // later `<name`. Unclosed matches are dropped, as before.
+  return [...head.matchAll(new RegExp(`<${name}\\b[^>]*(?:>|$)`, 'gi'))]
+    .filter((m) => m[0].endsWith('>'))
+    .map((m) => tagAttributes(m[0]));
+}
+
+// Same result as /<title\b[^>]*>([\s\S]*?)<\/title\s*>/i, but linear when <title is never closed.
+function titleText(head: string): string | undefined {
+  const open = /<title\b/i.exec(head);
+  if (!open) return undefined;
+  const start = head.indexOf('>', open.index) + 1;
+  if (start === 0) return undefined;
+  const close = /<\/title\s*>/gi;
+  close.lastIndex = start;
+  const end = close.exec(head);
+  return end ? head.slice(start, end.index) : undefined;
 }
 
 function resolveHttp(href: string | undefined, base: string): string | null {
@@ -81,7 +97,7 @@ export function parseHtmlMetadata(html: string, pageUrl: string): PageMetadata {
     if (key && a.content !== undefined && !(key in metas)) metas[key] = a.content;
   }
 
-  const titleTag = /<title\b[^>]*>([\s\S]*?)<\/title\s*>/i.exec(head)?.[1];
+  const titleTag = titleText(head);
   const title =
     cleanText(titleTag, MAX_TITLE) ?? cleanText(metas['og:title'], MAX_TITLE) ?? cleanText(metas['twitter:title'], MAX_TITLE);
   const description =

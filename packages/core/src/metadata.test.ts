@@ -57,6 +57,15 @@ describe('parseHtmlMetadata', () => {
       faviconUrl: 'https://example.com/favicon.ico',
     });
   });
+
+  it('stays fast on many unclosed tags', () => {
+    const html = '<meta '.repeat(50_000) + '<title'.repeat(50_000);
+    const start = performance.now();
+    const meta = parseHtmlMetadata(html, page);
+    const elapsed = performance.now() - start;
+    expect(meta.title).toBeNull();
+    expect(elapsed).toBeLessThan(500);
+  });
 });
 
 describe('isFetchableUrl', () => {
