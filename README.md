@@ -33,7 +33,7 @@ The web app keeps a full copy of your links and categories in IndexedDB. Every c
 
 The extension keeps no local copy. It reads and writes Supabase directly, so it needs a connection. The web app picks up its changes through Realtime or the next sync.
 
-Row-level security in Postgres means each account can only see its own links and categories. Signing out of the web app removes the local copy from that browser; if some changes have not synced yet, Linkstash asks first.
+Row-level security in Postgres means each account can only see its own links and categories. Signing out of the web app removes the local copy from that browser; if some changes have not synced yet, Linkstash asks first. If the session expires instead and a different account then signs in on that browser, the previous account's unsynced changes are discarded, and Linkstash says how many.
 
 ## Project structure
 
@@ -162,9 +162,10 @@ pnpm build
 | `apps/extension/.output/chrome-mv3/` | The extension for Chrome, Edge and other Chromium browsers |
 | `apps/extension/.output/firefox-mv3/` | The extension for Firefox |
 
-Generating the service worker can take up to a minute. Two extension build warnings are expected:
+Generating the service worker can take up to a minute. These build warnings are expected and harmless:
 
-- The popup chunk is larger than 500 kB. Extension files load from disk, so the size doesn't matter.
+- The web build says some chunks are larger than 500 kB. The service worker caches the app, so it downloads once per version.
+- The extension's popup chunk is larger than 500 kB. Extension files load from disk, so the size doesn't matter.
 - Firefox asks for `data_collection_permissions`. This only matters when publishing on addons.mozilla.org; see [Troubleshooting](#troubleshooting).
 
 `pnpm --filter @linkstash/web check:pwa` checks the web build. It prints `PWA check passed.` when the manifest, icons and service worker are in place.
@@ -266,4 +267,6 @@ Firefox removes temporary add-ons when it restarts, so load it again after a res
 - The extension needs a connection. It doesn't queue saves while offline.
 - Saving the same URL on two devices that are both offline can create a duplicate. Delete one of them.
 - iOS has no share target for web apps.
+- Links without a favicon of their own show one from Google's favicon service (`faviconFallback` in `packages/core/src/url.ts`). The browser sends the host name of each of those links to Google, intranet hosts included.
+- The `fetch-metadata` Edge Function refuses private and local addresses, but it only checks the host name or IP written in the URL. It doesn't resolve DNS, so it has no protection against a public name that points at a private address, or against DNS rebinding.
 - Not included: nested folders, sharing between accounts, saving page contents, importing or exporting browser bookmarks, OAuth or magic-link sign-in, and a Safari extension.
