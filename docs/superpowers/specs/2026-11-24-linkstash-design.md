@@ -38,7 +38,7 @@ linkstash/ (repo root)
 │  │     ├─ supabase-remote.ts   # SupabaseRemote implementation
 │  │     ├─ local.ts             # LocalStore interface + MemoryLocalStore (tests)
 │  │     ├─ sync.ts              # SyncEngine(local, remote)
-│  │     ├─ supabase.ts          # createLinkstashClient(url, anonKey, storageAdapter?)
+│  │     ├─ supabase.ts          # createLinkstashClient(url, publishableKey, storageAdapter?)
 │  │     └─ metadata-client.ts   # fetchMetadata via the Edge Function
 │  └─ ui/                        # shared React components (Tailwind classes)
 │     └─ src/ LinkForm (incl. comma-separated tags field), CategoryPicker, ColorDot, AuthForm
@@ -169,8 +169,8 @@ PWA configuration (`vite-plugin-pwa`, `generateSW`):
   saves without a category and flashes a ✓/✕ badge on the action icon.
 - Keyboard shortcut: `Alt+Shift+S` opens the popup.
 - Auth session persisted in `chrome.storage.local` via a supabase-js storage adapter.
-- Supabase URL / anon key injected at build time from `apps/extension/.env` (`WXT_SUPABASE_URL`,
-  `WXT_SUPABASE_ANON_KEY`, optional `WXT_APP_URL` for the "Open Linkstash" link).
+- Supabase URL / publishable key injected at build time from `apps/extension/.env` (`WXT_SUPABASE_URL`,
+  `WXT_SUPABASE_PUBLISHABLE_KEY`, optional `WXT_APP_URL` for the "Open Linkstash" link).
 
 ## 9. Configuration
 
@@ -178,19 +178,20 @@ Per-app `.env` files (gitignored), each mirrored by a committed `.env.example`:
 ```
 # apps/web/.env
 VITE_SUPABASE_URL=...
-VITE_SUPABASE_ANON_KEY=...
+VITE_SUPABASE_PUBLISHABLE_KEY=...
 
 # apps/extension/.env
 WXT_SUPABASE_URL=...
-WXT_SUPABASE_ANON_KEY=...
+WXT_SUPABASE_PUBLISHABLE_KEY=...
 WXT_APP_URL=http://localhost:5173   # optional
 ```
 The live smoke test reads `SMOKE_EMAIL` / `SMOKE_PASSWORD` (and optional `SMOKE_EDGE=1`) from
 `apps/web/.env.local`.
 
 Setup: create Supabase project → run `supabase/migrations/0001_init.sql` in SQL editor → (optional)
-`npx supabase functions deploy fetch-metadata --project-ref <ref> --use-api` → disable "Confirm
-email" for quick local testing (optional) → fill both `.env` files.
+`npx supabase@3 login` then `npx supabase@3 functions deploy fetch-metadata --remote=<project-ref> --use-api
+--no-verify-jwt` (the function checks the user's token itself; the gateway JWT check would block the CORS
+preflight) → disable "Confirm email" for quick local testing (optional) → fill both `.env` files.
 
 ## 10. Error handling
 
@@ -214,7 +215,7 @@ email" for quick local testing (optional) → fill both `.env` files.
 ## 12. Documentation deliverable
 
 `README.md` with: stack overview, structure, Supabase setup, `.env`, running dev servers, tests,
-building, testing PWA installability (desktop Chrome via `pnpm preview` on localhost; Android/iOS via
+building, testing PWA installability (desktop Chrome via `pnpm --filter @linkstash/web preview` on localhost; Android/iOS via
 HTTPS deploy or tunnel, e.g. `npx cloudflared tunnel --url http://localhost:4173`), and loading the
 extension unpacked in Chrome (`chrome://extensions` → Developer mode → Load unpacked
 `apps/extension/.output/chrome-mv3`) and Firefox (`about:debugging` → Load Temporary Add-on →
