@@ -25,6 +25,8 @@ export interface Category {
   user_id?: string;
   name: string;
   color: string;
+  /** A CATEGORY_ICONS name. Rows from other builds may hold names this build doesn't know; render with categoryIconName(). */
+  icon: string;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
@@ -54,6 +56,27 @@ export const CATEGORY_COLORS = [
   '#ec4899',
   '#64748b',
 ] as const;
+
+export const CATEGORY_ICONS = [
+  'folder', 'briefcase', 'house', 'book-open', 'graduation-cap', 'code', 'terminal', 'newspaper',
+  'video', 'film', 'music', 'image', 'camera', 'gamepad-2', 'shopping-cart', 'wallet',
+  'plane', 'map-pin', 'car', 'utensils', 'coffee', 'heart', 'star', 'bookmark',
+  'lightbulb', 'wrench', 'palette', 'pen-tool', 'globe', 'users', 'message-circle', 'mail',
+  'calendar', 'file-text', 'archive', 'tag', 'flag', 'rocket', 'dumbbell', 'leaf',
+] as const;
+
+export type CategoryIconName = (typeof CATEGORY_ICONS)[number];
+
+export const DEFAULT_CATEGORY_ICON: CategoryIconName = 'folder';
+
+export function isCategoryIcon(value: unknown): value is CategoryIconName {
+  return typeof value === 'string' && (CATEGORY_ICONS as readonly string[]).includes(value);
+}
+
+/** The icon to draw or edit: `value` when it is a known name, otherwise DEFAULT_CATEGORY_ICON. */
+export function categoryIconName(value: unknown): CategoryIconName {
+  return isCategoryIcon(value) ? value : DEFAULT_CATEGORY_ICON;
+}
 
 export function mutationTargetId(m: Mutation): string {
   return m.type === 'visit' ? m.id : m.row.id;

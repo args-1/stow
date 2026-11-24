@@ -116,6 +116,18 @@ describe('SupabaseRemote writes', () => {
     expect(req.body).toEqual(writable);
   });
 
+  it.each([
+    [undefined, 'folder'],
+    ['unicorn', 'unicorn'],
+  ])('sends a category icon of %s as %s', async (icon, sent) => {
+    const { client, requests } = fakeSupabase({ status: 201 });
+
+    await new SupabaseRemote(client).upsertCategory(makeCategory({ icon }));
+
+    const [req] = requests;
+    expect(req.body).toMatchObject({ icon: sent });
+  });
+
   it('records a visit through the increment_visit RPC', async () => {
     const { client, requests } = fakeSupabase({ status: 204 });
 

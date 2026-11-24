@@ -3,8 +3,8 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 import { CategoryManager, type CategoryActions } from './CategoryManager';
 
-const food = makeCategory({ id: 'cat-food', name: 'Food', color: '#ef4444' });
-const travel = makeCategory({ id: 'cat-travel', name: 'Travel', color: '#3b82f6' });
+const food = makeCategory({ id: 'cat-food', name: 'Food', color: '#ef4444', icon: 'heart' });
+const travel = makeCategory({ id: 'cat-travel', name: 'Travel', color: '#3b82f6', icon: 'plane' });
 const old = makeCategory({ id: 'cat-old', name: 'Old', deleted_at: '2026-01-05T00:00:00.000Z' });
 const links = [
   makeLink({ id: 'a', category_id: 'cat-food' }),
@@ -56,7 +56,7 @@ describe('CategoryManager', () => {
     fireEvent.click(newForm().getByRole('button', { name: 'Add category' }));
 
     await waitFor(() => expect((newForm().getByLabelText('Name') as HTMLInputElement).value).toBe(''));
-    expect(actions.addCategory).toHaveBeenCalledWith({ name: 'Books', color: '#14b8a6' });
+    expect(actions.addCategory).toHaveBeenCalledWith({ name: 'Books', color: '#14b8a6', icon: 'folder' });
     // Red and teal are now taken, so the next suggestion is orange again.
     expect(radio(newForm(), 'Orange').checked).toBe(true);
   });
@@ -83,7 +83,18 @@ describe('CategoryManager', () => {
     fireEvent.click(form.getByRole('button', { name: 'Save' }));
 
     await waitFor(() => expect(screen.queryByRole('form', { name: 'Edit Food' })).toBeNull());
-    expect(actions.editCategory).toHaveBeenCalledWith('cat-food', { name: 'Groceries', color: '#22c55e' });
+    expect(actions.editCategory).toHaveBeenCalledWith('cat-food', { name: 'Groceries', color: '#22c55e', icon: 'heart' });
+  });
+
+  it('saves a category whose icon this build does not know as folder', async () => {
+    const odd = makeCategory({ id: 'cat-odd', name: 'Odd', color: '#ef4444', icon: 'unicorn' });
+    render(<CategoryManager categories={[odd]} links={[]} actions={actions} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Edit Odd' }));
+
+    fireEvent.click(within(screen.getByRole('form', { name: 'Edit Odd' })).getByRole('button', { name: 'Save' }));
+
+    await waitFor(() => expect(screen.queryByRole('form', { name: 'Edit Odd' })).toBeNull());
+    expect(actions.editCategory).toHaveBeenCalledWith('cat-odd', { name: 'Odd', color: '#ef4444', icon: 'folder' });
   });
 
   it('deletes a category only after confirmation', () => {

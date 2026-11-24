@@ -3,7 +3,7 @@ import { z } from 'zod';
 // No `new Function` probe: the extension's MV3 CSP forbids eval, and zod would otherwise try it once.
 z.config({ jitless: true });
 
-import { CATEGORY_COLORS, type Category, type Link } from './schema';
+import { CATEGORY_COLORS, isCategoryIcon, type Category, type CategoryIconName, type Link } from './schema';
 import { dedupeKey, hostname, isHttpUrl, normalizeUrl } from './url';
 
 export type Result<T> = { ok: true; value: T } | { ok: false; error: string };
@@ -224,6 +224,8 @@ export function displayTitle(link: Pick<Link, 'custom_title' | 'title' | 'url'>)
 export interface CategoryInput {
   name: string;
   color: string;
+  /** One of CATEGORY_ICONS. */
+  icon: string;
 }
 
 const categoryInputSchema = z.object({
@@ -233,21 +235,33 @@ const categoryInputSchema = z.object({
     .min(1, 'Name is required')
     .max(LIMITS.categoryName, `Name must be at most ${LIMITS.categoryName} characters`),
   color: z.string().regex(/^#[0-9a-f]{6}$/i, 'Pick a color'),
+  icon: z.custom<CategoryIconName>(isCategoryIcon, 'Pick an icon'),
 });
 
 export function parseCategoryInput(input: CategoryInput): Result<CategoryInput> {
   const parsed = categoryInputSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? 'Invalid category' };
-  return { ok: true, value: { name: parsed.data.name, color: parsed.data.color.toLowerCase() } };
+  return {
+    ok: true,
+    value: { name: parsed.data.name, color: parsed.data.color.toLowerCase(), icon: parsed.data.icon },
+  };
 }
 
 /** Pass input that already went through parseCategoryInput. */
 export function createCategory(input: CategoryInput, clock: Clock = systemClock): Category {
   const now = clock.now();
-  return { id: clock.id(), name: input.name, color: input.color, created_at: now, updated_at: now, deleted_at: null };
+  return {
+    id: clock.id(),
+    name: input.name,
+    color: input.color,
+    icon: input.icon,
+    created_at: now,
+    updated_at: now,
+    deleted_at: null,
+  };
 }
 
-export type CategoryPatch = Partial<Pick<Category, 'name' | 'color' | 'deleted_at'>>;
+export type CategoryPatch = Partial<Pick<Category, 'name' | 'color' | 'icon' | 'deleted_at'>>;
 
 export function updateCategory(category: Category, patch: CategoryPatch, clock: Clock = systemClock): Category {
   return { ...category, ...patch, updated_at: clock.now() };

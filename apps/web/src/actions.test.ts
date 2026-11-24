@@ -195,33 +195,36 @@ describe('link flags and visits', () => {
 
 describe('categories', () => {
   it('creates, renames and deletes categories, rejecting bad or duplicate names', async () => {
-    const reading = await actions.addCategory({ name: ' Reading ', color: '#3B82F6' });
+    const reading = await actions.addCategory({ name: ' Reading ', color: '#3B82F6', icon: 'book-open' });
     if (!reading.ok) throw new Error(reading.error);
-    expect(reading.value).toMatchObject({ name: 'Reading', color: '#3b82f6' });
-    expect(await actions.addCategory({ name: 'reading', color: '#ef4444' })).toEqual({
+    expect(reading.value).toMatchObject({ name: 'Reading', color: '#3b82f6', icon: 'book-open' });
+    expect(await actions.addCategory({ name: 'reading', color: '#ef4444', icon: 'folder' })).toEqual({
       ok: false,
       error: 'A category with that name already exists',
     });
-    expect(await actions.addCategory({ name: '  ', color: '#ef4444' })).toEqual({ ok: false, error: 'Name is required' });
+    expect(await actions.addCategory({ name: '  ', color: '#ef4444', icon: 'folder' })).toEqual({
+      ok: false,
+      error: 'Name is required',
+    });
 
-    const work = await actions.addCategory({ name: 'Work', color: '#ef4444' });
+    const work = await actions.addCategory({ name: 'Work', color: '#ef4444', icon: 'briefcase' });
     if (!work.ok) throw new Error(work.error);
-    expect(await actions.editCategory(work.value.id, { name: 'READING', color: '#ef4444' })).toEqual({
+    expect(await actions.editCategory(work.value.id, { name: 'READING', color: '#ef4444', icon: 'briefcase' })).toEqual({
       ok: false,
       error: 'A category with that name already exists',
     });
-    expect(await actions.editCategory(reading.value.id, { name: 'reading', color: '#22c55e' })).toMatchObject({
+    expect(await actions.editCategory(reading.value.id, { name: 'reading', color: '#22c55e', icon: 'heart' })).toMatchObject({
       ok: true,
-      value: { id: reading.value.id, name: 'reading', color: '#22c55e' },
+      value: { id: reading.value.id, name: 'reading', color: '#22c55e', icon: 'heart' },
     });
 
     await actions.deleteCategory(reading.value.id);
     expect((await local.getCategory(reading.value.id))?.deleted_at).not.toBeNull();
-    expect(await actions.editCategory(reading.value.id, { name: 'X', color: '#3b82f6' })).toEqual({
+    expect(await actions.editCategory(reading.value.id, { name: 'X', color: '#3b82f6', icon: 'folder' })).toEqual({
       ok: false,
       error: 'This category was deleted',
     });
-    expect(await actions.addCategory({ name: 'Reading', color: '#3b82f6' })).toMatchObject({ ok: true });
+    expect(await actions.addCategory({ name: 'Reading', color: '#3b82f6', icon: 'folder' })).toMatchObject({ ok: true });
     expect(await outboxTypes()).toEqual(Array(5).fill('upsertCategory'));
   });
 });

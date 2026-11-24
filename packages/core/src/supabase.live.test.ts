@@ -36,7 +36,7 @@ const createdLinks: string[] = [];
 const createdCategories: string[] = [];
 
 async function saveCategory(name: string): Promise<Category> {
-  const category = createCategory({ name: `${name} ${Date.now()}`, color: CATEGORY_COLORS[0] });
+  const category = createCategory({ name: `${name} ${Date.now()}`, color: CATEGORY_COLORS[0], icon: 'briefcase' });
   createdCategories.push(category.id);
   await remote.upsertCategory(category);
   return category;
@@ -102,6 +102,7 @@ describe('live Supabase project', () => {
     expect(saved?.last_visited_at).not.toBeNull();
     expect(await remote.findLinkByUrlKey(link.url_key)).toMatchObject({ id: link.id });
     expect((await remote.listCategories()).map((c) => c.id)).toContain(category.id);
+    expect((await remote.listCategories()).find((c) => c.id === category.id)?.icon).toBe('briefcase');
   });
 
   it('uncategorizes links when their category is soft-deleted', async () => {

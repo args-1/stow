@@ -31,6 +31,7 @@ const cat = (over: Partial<Category>): Category => ({
   id: 'c',
   name: 'n',
   color: '#3b82f6',
+  icon: 'folder',
   created_at: T,
   updated_at: T,
   deleted_at: null,

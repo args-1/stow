@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { RemoteError, type Remote } from './remote';
-import type { Category, Link, SyncTable } from './schema';
+import { DEFAULT_CATEGORY_ICON, type Category, type Link, type SyncTable } from './schema';
 
 const DEFAULT_PAGE_SIZE = 1000;
 
@@ -46,8 +46,16 @@ function linkPayload(row: Link) {
   };
 }
 
+/** Rows pulled before migration 0002 have no icon; they are sent as folder. Unknown names pass through unchanged. */
 function categoryPayload(row: Category) {
-  return { id: row.id, name: row.name, color: row.color, created_at: row.created_at, deleted_at: row.deleted_at };
+  return {
+    id: row.id,
+    name: row.name,
+    color: row.color,
+    icon: row.icon ?? DEFAULT_CATEGORY_ICON,
+    created_at: row.created_at,
+    deleted_at: row.deleted_at,
+  };
 }
 
 export interface SupabaseRemoteOptions {

@@ -36,6 +36,7 @@ export function makeCategory(over: Partial<Category> = {}): Category {
     id: `cat-${categorySeq}`,
     name: `Category ${categorySeq}`,
     color: '#3b82f6',
+    icon: 'folder',
     created_at: T0,
     updated_at: T0,
     deleted_at: null,

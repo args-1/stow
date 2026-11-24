@@ -15,9 +15,10 @@ import {
   updateCategory,
   updateLink,
   type Clock,
+  type CategoryInput,
   type LinkInput,
 } from './model';
-import { CATEGORY_COLORS } from './schema';
+import { CATEGORY_COLORS, categoryIconName, isCategoryIcon } from './schema';
 
 const T0 = '2026-01-01T00:00:00.000Z';
 const EMOJI = '\u{1F600}'; // two UTF-16 code units
@@ -184,26 +185,62 @@ describe('metadataPatch / needsMetadata', () => {
 });
 
 describe('categories', () => {
-  it('validates name and color', () => {
-    expect(parseCategoryInput({ name: '  Work ', color: '#3B82F6' })).toEqual({
+  it('validates name, color and icon', () => {
+    expect(parseCategoryInput({ name: '  Work ', color: '#3B82F6', icon: 'briefcase' })).toEqual({
       ok: true,
-      value: { name: 'Work', color: '#3b82f6' },
+      value: { name: 'Work', color: '#3b82f6', icon: 'briefcase' },
     });
-    expect(parseCategoryInput({ name: ' ', color: '#3b82f6' })).toEqual({ ok: false, error: 'Name is required' });
-    expect(parseCategoryInput({ name: 'x'.repeat(51), color: '#3b82f6' }).ok).toBe(false);
-    expect(parseCategoryInput({ name: 'Work', color: 'blue' })).toEqual({ ok: false, error: 'Pick a color' });
+    expect(parseCategoryInput({ name: ' ', color: '#3b82f6', icon: 'folder' })).toEqual({
+      ok: false,
+      error: 'Name is required',
+    });
+    expect(parseCategoryInput({ name: 'x'.repeat(51), color: '#3b82f6', icon: 'folder' }).ok).toBe(false);
+    expect(parseCategoryInput({ name: 'Work', color: 'blue', icon: 'folder' })).toEqual({ ok: false, error: 'Pick a color' });
+    expect(parseCategoryInput({ name: 'Work', color: '#3b82f6', icon: 'unicorn' })).toEqual({
+      ok: false,
+      error: 'Pick an icon',
+    });
+    expect(parseCategoryInput({ name: 'Work', color: '#3b82f6' } as CategoryInput)).toEqual({
+      ok: false,
+      error: 'Pick an icon',
+    });
+  });
+  it('reports name and color errors before icon errors', () => {
+    expect(parseCategoryInput({ name: ' ', color: '#3b82f6', icon: 'unicorn' })).toEqual({
+      ok: false,
+      error: 'Name is required',
+    });
+    expect(parseCategoryInput({ name: 'Work', color: 'blue', icon: 'unicorn' })).toEqual({ ok: false, error: 'Pick a color' });
+  });
+  it('recognises curated icon names and falls back to folder for anything else', () => {
+    expect(isCategoryIcon('briefcase')).toBe(true);
+    expect(isCategoryIcon('unicorn')).toBe(false);
+    expect(isCategoryIcon(undefined)).toBe(false);
+    expect(categoryIconName('leaf')).toBe('leaf');
+    expect(categoryIconName('unicorn')).toBe('folder');
+    expect(categoryIconName(undefined)).toBe('folder');
+    expect(categoryIconName(42)).toBe('folder');
   });
   it('creates and updates categories', () => {
-    const c = createCategory({ name: 'Work', color: '#3b82f6' }, clock());
-    expect(c).toEqual({ id: 'id-1', name: 'Work', color: '#3b82f6', created_at: T0, updated_at: T0, deleted_at: null });
-    expect(updateCategory(c, { name: 'Jobs' }, clock('2026-03-01T00:00:00.000Z'))).toMatchObject({
+    const c = createCategory({ name: 'Work', color: '#3b82f6', icon: 'briefcase' }, clock());
+    expect(c).toEqual({
+      id: 'id-1',
+      name: 'Work',
+      color: '#3b82f6',
+      icon: 'briefcase',
+      created_at: T0,
+      updated_at: T0,
+      deleted_at: null,
+    });
+    expect(updateCategory(c, { name: 'Jobs', icon: 'heart' }, clock('2026-03-01T00:00:00.000Z'))).toMatchObject({
       name: 'Jobs',
+      icon: 'heart',
       updated_at: '2026-03-01T00:00:00.000Z',
     });
   });
   it('nextCategoryColor picks the first unused palette color', () => {
     expect(nextCategoryColor([])).toBe(CATEGORY_COLORS[0]);
-    const c = createCategory({ name: 'A', color: CATEGORY_COLORS[0] }, clock());
+    const c = createCategory({ name: 'A', color: CATEGORY_COLORS[0], icon: 'folder' }, clock());
     expect(nextCategoryColor([c])).toBe(CATEGORY_COLORS[1]);
   });
 });

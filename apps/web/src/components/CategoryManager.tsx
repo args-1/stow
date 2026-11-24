@@ -1,6 +1,8 @@
 import {
   activeCategories,
+  categoryIconName,
   countByCategory,
+  DEFAULT_CATEGORY_ICON,
   LIMITS,
   nextCategoryColor,
   type Category,
@@ -37,6 +39,7 @@ function CategoryForm({ label, initial, submitLabel, onSubmit, onDone, onCancel 
   const id = useId();
   const [name, setName] = useState(initial.name);
   const [color, setColor] = useState(initial.color);
+  const [icon] = useState(() => categoryIconName(initial.icon));
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
@@ -44,7 +47,7 @@ function CategoryForm({ label, initial, submitLabel, onSubmit, onDone, onCancel 
     event.preventDefault();
     setPending(true);
     try {
-      const result = await onSubmit({ name, color });
+      const result = await onSubmit({ name, color, icon });
       if (!result.ok) {
         setError(result.error);
         return;
@@ -107,7 +110,7 @@ export function CategoryManager({ categories, links, actions }: CategoryManagerP
       <CategoryForm
         key={addForm.key}
         label="New category"
-        initial={{ name: '', color: addForm.color }}
+        initial={{ name: '', color: addForm.color, icon: DEFAULT_CATEGORY_ICON }}
         submitLabel="Add category"
         onSubmit={actions.addCategory}
         onDone={(created) =>
@@ -123,7 +126,7 @@ export function CategoryManager({ categories, links, actions }: CategoryManagerP
               {editingId === category.id ? (
                 <CategoryForm
                   label={`Edit ${category.name}`}
-                  initial={{ name: category.name, color: category.color }}
+                  initial={{ name: category.name, color: category.color, icon: category.icon }}
                   submitLabel="Save"
                   onSubmit={(input) => actions.editCategory(category.id, input)}
                   onDone={() => setEditingId(null)}
