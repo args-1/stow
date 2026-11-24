@@ -24,6 +24,13 @@ export function openDb(name = 'linkstash'): LinkstashDb {
   return db;
 }
 
+export interface OwnerClaim {
+  /** The device held another account's data. */
+  switched: boolean;
+  /** Unsynced changes wiped along with the previous data. */
+  discarded: number;
+}
+
 const OWNER_KEY = 'owner';
 const cursorKey = (table: SyncTable) => `cursor:${table}`;
 
@@ -89,13 +96,18 @@ export class DexieLocalStore implements LocalStore {
     return (await this.db.meta.get(OWNER_KEY))?.value ?? null;
   }
 
-  async ensureOwner(userId: string): Promise<boolean> {
+  /**
+   * Claims this device's data for `userId`. Data owned by anyone else (or by no one) is wiped first;
+   * `discarded` counts the unsynced changes that went with it.
+   */
+  async ensureOwner(userId: string): Promise<OwnerClaim> {
     return this.db.transaction('rw', this.db.tables, async () => {
       const owner = await this.getOwner();
-      if (owner === userId) return false;
+      if (owner === userId) return { switched: false, discarded: 0 };
+      const discarded = await this.db.outbox.count();
       await Promise.all(this.db.tables.map((table) => table.clear()));
       await this.db.meta.put({ key: OWNER_KEY, value: userId });
-      return owner !== null;
+      return { switched: owner !== null, discarded };
     });
   }
 }

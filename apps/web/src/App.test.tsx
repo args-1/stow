@@ -89,4 +89,16 @@ describe('App', () => {
     expect(screen.queryByText('Not yours')).toBeNull();
     expect(await store.listLinks()).toEqual([]);
   });
+
+  it('offers a reload when the saved links on this device cannot be opened', async () => {
+    const { services, store, scheduler } = createFakeServices(fakeSession('user-1'));
+    vi.spyOn(store, 'ensureOwner').mockRejectedValue(new Error('IndexedDB is broken'));
+    const onReload = vi.fn();
+    renderWithServices(<App onReload={onReload} />, services);
+
+    expect(await screen.findByText('Could not open the saved links on this device. Try reloading the page.')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Reload' }));
+    expect(onReload).toHaveBeenCalledOnce();
+    expect(scheduler.start).not.toHaveBeenCalled();
+  });
 });

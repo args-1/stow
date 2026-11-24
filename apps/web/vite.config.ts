@@ -41,7 +41,9 @@ export default defineConfig({
             handler: 'CacheFirst',
             options: {
               cacheName: 'favicons',
-              expiration: { maxEntries: 300, maxAgeSeconds: 60 * 60 * 24 * 30, purgeOnQuotaError: true },
+              // Cross-origin favicons are opaque, and Chrome counts each opaque response as ~7 MB of quota
+              // shared with the offline database, so keep this cache small.
+              expiration: { maxEntries: 100, maxAgeSeconds: 60 * 60 * 24 * 7, purgeOnQuotaError: true },
               cacheableResponse: { statuses: [0, 200] },
             },
           },

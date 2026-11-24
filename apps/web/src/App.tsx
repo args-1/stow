@@ -1,3 +1,4 @@
+import { buttonClass } from '@linkstash/ui';
 import { useCallback, useState, type ReactNode } from 'react';
 import { AuthScreen } from './components/AuthScreen';
 import { Toaster } from './components/Toaster';
@@ -10,9 +11,13 @@ import { useSyncLifecycle } from './sync/useSyncLifecycle';
 export interface AppProps {
   /** A link shared to the installed app before it started. */
   share?: SharedLink | null;
+  /** Called by the Reload button on the error screen. Defaults to reloading the page. */
+  onReload?: () => void;
 }
 
-export function App({ share: sharedAtStart = null }: AppProps) {
+const reloadPage = () => location.reload();
+
+export function App({ share: sharedAtStart = null, onReload = reloadPage }: AppProps) {
   const services = useServices();
   const session = useSession(services.supabase);
   const owner = useOwner(services.store);
@@ -21,10 +26,12 @@ export function App({ share: sharedAtStart = null }: AppProps) {
   const clearShare = useCallback(() => setShare(null), []);
 
   const userId = session.status === 'ready' ? (session.session?.user.id ?? null) : null;
-  useSyncLifecycle(services, userId);
+  const openError = useSyncLifecycle(services, userId);
 
   let screen: ReactNode = null;
-  if (session.status === 'ready' && owner !== undefined) {
+  if (openError) {
+    screen = <ErrorScreen message={openError} onReload={onReload} />;
+  } else if (session.status === 'ready' && owner !== undefined) {
     const library = <Library share={share} onShareOpened={clearShare} />;
     if (userId) {
       // Shown once useSyncLifecycle has claimed this device's data for the user.
@@ -42,5 +49,21 @@ export function App({ share: sharedAtStart = null }: AppProps) {
       {screen}
       <Toaster />
     </>
+  );
+}
+
+function ErrorScreen({ message, onReload }: { message: string; onReload: () => void }) {
+  return (
+    <main className="flex min-h-dvh items-center justify-center p-4">
+      <div
+        role="alert"
+        className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900"
+      >
+        <p className="mb-4 text-sm text-slate-700 dark:text-slate-200">{message}</p>
+        <button type="button" className={buttonClass} onClick={onReload}>
+          Reload
+        </button>
+      </div>
+    </main>
   );
 }

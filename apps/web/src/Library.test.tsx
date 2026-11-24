@@ -1,5 +1,5 @@
 import { makeCategory, makeLink } from '@linkstash/core/testing';
-import { fireEvent, screen, within } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Library } from './Library';
 import { createFakeServices, fakeSession, renderWithServices, type FakeServices } from './test/fakeServices';
@@ -94,13 +94,27 @@ describe('Library', () => {
     await screen.findByText('1 pending');
 
     fireEvent.click(screen.getByRole('button', { name: 'Sign out' }));
-    expect(confirm).toHaveBeenCalledOnce();
+    await waitFor(() => expect(confirm).toHaveBeenCalledOnce());
     expect(fake.auth.signOut).not.toHaveBeenCalled();
 
     fireEvent.click(screen.getByRole('button', { name: 'Sign out' }));
     await screen.findByText(/No links yet/);
     expect(fake.auth.signOut).toHaveBeenCalledWith({ scope: 'local' });
+    expect(fake.scheduler.stop).toHaveBeenCalled();
     expect(await fake.store.peekOutbox()).toEqual([]);
+  });
+
+  it('still confirms when Sign out is clicked before the pending count has loaded', async () => {
+    const link = makeLink({ title: 'Unsynced' });
+    await fake.store.apply({ links: [link], mutations: [{ type: 'upsertLink', row: link }] });
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    renderWithServices(<Library />, fake.services);
+    expect(screen.queryByText('1 pending')).toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Sign out' }));
+    await waitFor(() => expect(confirm).toHaveBeenCalledOnce());
+    expect(fake.auth.signOut).not.toHaveBeenCalled();
+    expect(await fake.store.peekOutbox()).toHaveLength(1);
   });
 
   it('manages categories from the filter bar', async () => {

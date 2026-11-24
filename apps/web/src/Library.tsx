@@ -39,7 +39,7 @@ const addButtonClass =
   'md:static md:h-auto md:w-auto md:rounded-lg md:px-4 md:py-2 md:text-sm md:font-medium md:shadow-none';
 
 export function Library({ share = null, onShareOpened }: LibraryProps) {
-  const { supabase, store, actions } = useServices();
+  const { supabase, store, actions, scheduler } = useServices();
   const links = useLinks(store);
   const categories = useCategories(store);
   const pending = usePendingCount(store);
@@ -69,12 +69,16 @@ export function Library({ share = null, onShareOpened }: LibraryProps) {
   const openEdit = (link: Link) => setSheet({ kind: 'link', target: { mode: 'edit', link } });
 
   async function signOut() {
-    if (pending > 0 && !window.confirm('Some changes have not synced yet and will be lost. Sign out anyway?')) return;
+    // Counted now: the live pending count reads 0 until its first query resolves.
+    const unsynced = await store.db.outbox.count();
+    if (unsynced > 0 && !window.confirm('Some changes have not synced yet and will be lost. Sign out anyway?')) return;
     const { error } = await supabase.auth.signOut({ scope: 'local' });
     if (error) {
       toast.error(`Could not sign out: ${error.message}`);
       return;
     }
+    // Abort any sync still in flight so it cannot push or pull around the wipe.
+    scheduler.stop();
     await store.clear();
   }
 
