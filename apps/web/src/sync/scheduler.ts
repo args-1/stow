@@ -9,7 +9,8 @@ export function backoffDelay(failures: number): number {
 }
 
 export interface SyncSchedulerOptions {
-  run(): Promise<SyncResult>;
+  /** One sync. `signal` aborts when the scheduler stops; whatever the run then returns or throws is ignored. */
+  run(signal: AbortSignal): Promise<SyncResult>;
   /** Called when `run` returns 'auth'. Resolve true to run again now, false to wait for the next trigger. */
   onAuth(attempt: number): Promise<boolean>;
   /** Called after each consecutive 'retry', with the number of failures so far. */
@@ -21,74 +22,84 @@ export interface SyncSchedulerOptions {
 
 export interface SyncScheduler {
   start(): void;
+  /** Stops the timers and aborts the current run. */
   stop(): void;
-  /** Asks for a sync now. Ignored while stopped; during a run, queues one more run. */
+  /**
+   * Asks for a sync now. Ignored while stopped. During a run, queues one more run once that run succeeds;
+   * if it ends in 'retry', 'auth' or an error, the backoff timer, `onAuth` or the next trigger decides instead.
+   */
   request(): void;
+}
+
+/** State for one start()…stop() span, so a run left over from a stopped session cannot affect the next one. */
+interface Session {
+  readonly controller: AbortController;
+  running: boolean;
+  again: boolean;
+  failures: number;
+  interval?: ReturnType<typeof setInterval>;
+  retryTimer?: ReturnType<typeof setTimeout>;
 }
 
 export function createSyncScheduler(options: SyncSchedulerOptions): SyncScheduler {
   const intervalMs = options.intervalMs ?? SYNC_INTERVAL_MS;
-  let active = false;
-  let running = false;
-  let again = false;
-  let failures = 0;
-  let interval: ReturnType<typeof setInterval> | undefined;
-  let retryTimer: ReturnType<typeof setTimeout> | undefined;
+  let session: Session | null = null;
 
-  async function runLoop(): Promise<void> {
-    running = true;
+  async function runLoop(s: Session): Promise<void> {
+    const { signal } = s.controller;
+    s.running = true;
     let authAttempt = 0;
     try {
       do {
-        again = false;
-        const result = await options.run();
-        if (!active) return;
+        s.again = false;
+        const result = await options.run(signal);
+        if (signal.aborted) return;
         if (result === 'retry') {
-          failures++;
-          options.onRetry?.(failures);
-          retryTimer = setTimeout(request, backoffDelay(failures));
+          s.failures++;
+          options.onRetry?.(s.failures);
+          s.retryTimer = setTimeout(request, backoffDelay(s.failures));
           return;
         }
         if (result === 'auth') {
           if (!(await options.onAuth(authAttempt++))) return;
-          again = true;
+          s.again = true;
         } else {
-          failures = 0;
+          s.failures = 0;
         }
-      } while (again && active);
+      } while (s.again && !signal.aborted);
     } finally {
-      running = false;
+      s.running = false;
     }
   }
 
   function request(): void {
-    if (!active) return;
-    if (running) {
-      again = true;
+    const s = session;
+    if (!s) return;
+    if (s.running) {
+      s.again = true;
       return;
     }
-    clearTimeout(retryTimer);
-    retryTimer = undefined;
-    runLoop().catch((error: unknown) => {
-      if (active) options.onError(error);
+    clearTimeout(s.retryTimer);
+    s.retryTimer = undefined;
+    runLoop(s).catch((error: unknown) => {
+      if (!s.controller.signal.aborted) options.onError(error);
     });
   }
 
   return {
     start() {
-      if (active) return;
-      active = true;
-      failures = 0;
-      interval = setInterval(request, intervalMs);
+      if (session) return;
+      session = { controller: new AbortController(), running: false, again: false, failures: 0 };
+      session.interval = setInterval(request, intervalMs);
       request();
     },
     stop() {
-      active = false;
-      again = false;
-      clearInterval(interval);
-      clearTimeout(retryTimer);
-      interval = undefined;
-      retryTimer = undefined;
+      const s = session;
+      if (!s) return;
+      session = null;
+      s.controller.abort();
+      clearInterval(s.interval);
+      clearTimeout(s.retryTimer);
     },
     request,
   };

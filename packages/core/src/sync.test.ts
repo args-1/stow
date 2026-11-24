@@ -31,7 +31,7 @@ describe('errorKind', () => {
   });
 });
 
-describe('SyncEngine.flush', () => {
+describe('SyncEngine.sync pushing', () => {
   it('pushes outbox entries in order and empties the outbox', async () => {
     const cat = makeCategory();
     const link = makeLink({ category_id: cat.id });
@@ -39,8 +39,8 @@ describe('SyncEngine.flush', () => {
     await engine.saveLink(link);
     expect(await local.getLink(link.id)).toEqual(link);
 
-    expect(await engine.flush()).toBe('ok');
-    expect(remote.calls).toEqual([`upsertCategory:${cat.id}`, `upsertLink:${link.id}`]);
+    expect(await engine.sync()).toBe('ok');
+    expect(remote.calls).toEqual([`upsertCategory:${cat.id}`, `upsertLink:${link.id}`, 'pullCategories', 'pullLinks']);
     expect(remote.links.get(link.id)?.title).toBe(link.title);
     expect(await local.peekOutbox()).toEqual([]);
   });
@@ -52,18 +52,24 @@ describe('SyncEngine.flush', () => {
     await engine.saveLink(b);
     remote.failNext(offline());
 
-    expect(await engine.flush()).toBe('retry');
+    expect(await engine.sync()).toBe('retry');
     expect(await pendingIds()).toEqual([a.id, b.id]);
 
-    expect(await engine.flush()).toBe('ok');
-    expect(remote.calls).toEqual([`upsertLink:${a.id}`, `upsertLink:${a.id}`, `upsertLink:${b.id}`]);
+    expect(await engine.sync()).toBe('ok');
+    expect(remote.calls).toEqual([
+      `upsertLink:${a.id}`,
+      `upsertLink:${a.id}`,
+      `upsertLink:${b.id}`,
+      'pullCategories',
+      'pullLinks',
+    ]);
   });
 
   it('returns auth on 401 without dropping anything', async () => {
     const a = makeLink();
     await engine.saveLink(a);
     remote.failNext(new RemoteError('JWT expired', 401));
-    expect(await engine.flush()).toBe('auth');
+    expect(await engine.sync()).toBe('auth');
     expect(await pendingIds()).toEqual([a.id]);
   });
 
@@ -75,23 +81,65 @@ describe('SyncEngine.flush', () => {
     const error = new RemoteError('violates check constraint', 400);
     remote.failNext(error);
 
-    expect(await engine.flush()).toBe('ok');
+    expect(await engine.sync()).toBe('ok');
     expect(fatal).toHaveBeenCalledWith(error, { type: 'upsertLink', row: a });
     expect(remote.links.has(a.id)).toBe(false);
     expect(remote.links.has(b.id)).toBe(true);
     expect(await local.peekOutbox()).toEqual([]);
+  });
+
+  it('never pushes an entry that was removed from the outbox mid-flush', async () => {
+    const a = makeLink();
+    const b = makeLink();
+    await engine.saveLink(a);
+    await engine.saveLink(b);
+    const upsert = remote.upsertLink.bind(remote);
+    remote.upsertLink = async (row) => {
+      await upsert(row);
+      await local.clear();
+    };
+
+    expect(await engine.sync()).toBe('ok');
+    expect(remote.calls.filter((c) => c.startsWith('upsertLink'))).toEqual([`upsertLink:${a.id}`]);
+    expect(remote.links.has(b.id)).toBe(false);
+  });
+
+  it('stops pushing once the signal is aborted and keeps the remaining entries', async () => {
+    const a = makeLink();
+    const b = makeLink();
+    await engine.saveLink(a);
+    await engine.saveLink(b);
+    const controller = new AbortController();
+    const upsert = remote.upsertLink.bind(remote);
+    remote.upsertLink = async (row) => {
+      await upsert(row);
+      controller.abort();
+    };
+
+    await expect(engine.sync(controller.signal)).rejects.toMatchObject({ name: 'AbortError' });
+    expect(remote.calls).toEqual([`upsertLink:${a.id}`]);
+    expect(await pendingIds()).toEqual([b.id]);
+    expect(fatal).not.toHaveBeenCalled();
+  });
+
+  it('does not start when the signal is already aborted', async () => {
+    await engine.saveLink(makeLink());
+    const controller = new AbortController();
+    controller.abort();
+    await expect(engine.sync(controller.signal)).rejects.toMatchObject({ name: 'AbortError' });
+    expect(remote.calls).toEqual([]);
   });
 });
 
 describe('SyncEngine.recordVisit', () => {
   it('bumps the local count and queues a server increment', async () => {
     const link = remote.serverWriteLink(makeLink());
-    await engine.pull();
+    await engine.sync();
     await engine.recordVisit(link.id, '2026-02-01T00:00:00.000Z');
     expect(await local.getLink(link.id)).toMatchObject({ visit_count: 1, last_visited_at: '2026-02-01T00:00:00.000Z' });
 
-    expect(await engine.flush()).toBe('ok');
-    expect(remote.calls.at(-1)).toBe(`incrementVisit:${link.id}`);
+    expect(await engine.sync()).toBe('ok');
+    expect(remote.calls).toContain(`incrementVisit:${link.id}`);
     expect(remote.links.get(link.id)?.visit_count).toBe(1);
   });
 
@@ -101,12 +149,12 @@ describe('SyncEngine.recordVisit', () => {
   });
 });
 
-describe('SyncEngine.pull', () => {
+describe('SyncEngine.sync pulling', () => {
   it('merges categories then links, including tombstones', async () => {
     const cat = remote.serverWriteCategory(makeCategory());
     const live = remote.serverWriteLink(makeLink({ category_id: cat.id }));
     const dead = remote.serverWriteLink(makeLink({ deleted_at: '2026-01-01T00:00:00.000Z' }));
-    await engine.pull();
+    expect(await engine.sync()).toBe('ok');
     expect(remote.calls).toEqual(['pullCategories', 'pullLinks']);
     expect(await local.getCategory(cat.id)).toEqual(cat);
     expect(await local.getLink(live.id)).toEqual(live);
@@ -115,12 +163,18 @@ describe('SyncEngine.pull', () => {
 
   it('keeps a pending local change instead of the server copy', async () => {
     const server = remote.serverWriteLink(makeLink({ title: 'server' }));
-    await engine.saveLink({ ...server, title: 'mine' });
-    await engine.pull();
+    const pullLinks = remote.pullLinks.bind(remote);
+    remote.pullLinks = async (since) => {
+      remote.pullLinks = pullLinks;
+      const rows = await pullLinks(since);
+      await engine.saveLink({ ...server, title: 'mine' });
+      return rows;
+    };
+    expect(await engine.sync()).toBe('ok');
     expect((await local.getLink(server.id))?.title).toBe('mine');
+    expect(await pendingIds()).toEqual([server.id]);
 
-    await engine.flush();
-    await engine.pull();
+    expect(await engine.sync()).toBe('ok');
     expect(await local.getLink(server.id)).toEqual(remote.links.get(server.id));
     expect((await local.getLink(server.id))?.title).toBe('mine');
   });
@@ -128,14 +182,14 @@ describe('SyncEngine.pull', () => {
   it('advances the cursor and re-reads with an overlap window', async () => {
     remote.serverWriteLink(makeLink());
     const second = remote.serverWriteLink(makeLink());
-    await engine.pull();
+    await engine.sync();
     expect(remote.sinceLog).toEqual([
       { table: 'categories', since: null },
       { table: 'links', since: null },
     ]);
     expect(await local.getCursor('links')).toBe(second.updated_at);
 
-    await engine.pull();
+    await engine.sync();
     const expected = new Date(Date.parse(second.updated_at) - PULL_OVERLAP_MS).toISOString();
     expect(remote.sinceLog.at(-1)).toEqual({ table: 'links', since: expected });
     expect(await local.getCursor('links')).toBe(second.updated_at);
@@ -145,7 +199,7 @@ describe('SyncEngine.pull', () => {
     const row = remote.serverWriteLink(makeLink());
     const later = new Date(Date.parse(row.updated_at) + 2000).toISOString();
     await local.setCursor('links', later);
-    await engine.pull();
+    await engine.sync();
     expect(await local.getLink(row.id)).toBeDefined();
     expect(await local.getCursor('links')).toBe(later);
   });
@@ -159,9 +213,26 @@ describe('SyncEngine.pull', () => {
       save ??= engine.saveLink({ ...server, title: 'mine' });
       return entries;
     };
-    await engine.pull();
+    await engine.sync();
     await save;
     expect((await local.getLink(server.id))?.title).toBe('mine');
+  });
+
+  it('applies nothing and leaves the cursor alone when aborted mid-pull', async () => {
+    const cat = remote.serverWriteCategory(makeCategory());
+    const link = remote.serverWriteLink(makeLink({ category_id: cat.id }));
+    const controller = new AbortController();
+    const pullLinks = remote.pullLinks.bind(remote);
+    remote.pullLinks = async (since) => {
+      const rows = await pullLinks(since);
+      controller.abort();
+      return rows;
+    };
+
+    await expect(engine.sync(controller.signal)).rejects.toMatchObject({ name: 'AbortError' });
+    expect(remote.calls).toEqual(['pullCategories', 'pullLinks']);
+    expect(await local.getLink(link.id)).toBeUndefined();
+    expect(await local.getCursor('links')).toBeNull();
   });
 });
 
@@ -196,5 +267,31 @@ describe('SyncEngine.sync', () => {
     const results = await Promise.all([engine.sync(), engine.sync(), engine.sync()]);
     expect(results).toEqual(['ok', 'ok', 'ok']);
     expect(remote.calls.filter((c) => c === 'pullLinks')).toHaveLength(2);
+  });
+
+  it('starts a fresh run for a new signal instead of joining an aborted one', async () => {
+    const link = makeLink();
+    await engine.saveLink(link);
+    let started!: () => void;
+    const pushing = new Promise<void>((resolve) => (started = resolve));
+    let release!: () => void;
+    const gate = new Promise<void>((resolve) => (release = resolve));
+    const upsert = remote.upsertLink.bind(remote);
+    remote.upsertLink = async (row) => {
+      started();
+      await gate;
+      await upsert(row);
+    };
+
+    const a = new AbortController();
+    const runA = engine.sync(a.signal);
+    await pushing;
+    a.abort();
+    const runB = engine.sync(new AbortController().signal);
+    release();
+
+    await expect(runA).rejects.toMatchObject({ name: 'AbortError' });
+    expect(await runB).toBe('ok');
+    expect(remote.calls).toEqual([`upsertLink:${link.id}`, 'pullCategories', 'pullLinks']);
   });
 });

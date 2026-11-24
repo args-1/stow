@@ -63,6 +63,10 @@ export class DexieLocalStore implements LocalStore {
     return this.db.outbox.toArray();
   }
 
+  peekOutboxHead() {
+    return this.db.outbox.orderBy('seq').first();
+  }
+
   async removeOutbox(seq: number) {
     await this.db.outbox.delete(seq);
   }

@@ -16,6 +16,8 @@ export interface LocalStore {
   apply(change: LocalChange): Promise<void>;
   /** All outbox entries in ascending seq order, without removing them. */
   peekOutbox(): Promise<OutboxEntry[]>;
+  /** The oldest outbox entry, or undefined when the outbox is empty. */
+  peekOutboxHead(): Promise<OutboxEntry | undefined>;
   removeOutbox(seq: number): Promise<void>;
   getCursor(table: SyncTable): Promise<string | null>;
   setCursor(table: SyncTable, cursor: string): Promise<void>;
@@ -59,6 +61,11 @@ export class MemoryLocalStore implements LocalStore {
 
   async peekOutbox() {
     return structuredClone(this.outbox);
+  }
+
+  async peekOutboxHead() {
+    const head = this.outbox[0];
+    return head && structuredClone(head);
   }
 
   async removeOutbox(seq: number) {

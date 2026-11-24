@@ -11,6 +11,7 @@ import { createActions, type Actions } from './actions';
 import { DexieLocalStore, openDb } from './db';
 import type { WebConfig } from './env';
 import { createSyncScheduler, type SyncScheduler } from './sync/scheduler';
+import { withSyncLock } from './sync/syncLock';
 import { errorText, toast } from './toast';
 
 export interface Services {
@@ -31,7 +32,9 @@ export function createServices(config: WebConfig): Services {
 
   const scheduler = createSyncScheduler({
     // Tabs share one IndexedDB outbox, so serialize syncs across tabs to avoid pushing the same entries twice.
-    run: () => ('locks' in navigator ? navigator.locks.request('linkstash-sync', () => engine.sync()) : engine.sync()),
+    // stop() aborts `signal`, which also drops a request still queued behind another tab's lock.
+    run: (signal) =>
+      withSyncLock(() => engine.sync(signal), 'locks' in navigator ? navigator.locks : undefined, signal),
     async onAuth(attempt) {
       if (attempt === 0) {
         const { error } = await supabase.auth.refreshSession();

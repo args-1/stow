@@ -13,6 +13,7 @@ export function describeLocalStoreContract(
       expect(await s.listLinks()).toEqual([]);
       expect(await s.listCategories()).toEqual([]);
       expect(await s.peekOutbox()).toEqual([]);
+      expect(await s.peekOutboxHead()).toBeUndefined();
       expect(await s.getLink('missing')).toBeUndefined();
       expect(await s.getCategory('missing')).toBeUndefined();
       expect(await s.getCursor('links')).toBeNull();
@@ -56,15 +57,22 @@ export function describeLocalStoreContract(
       expect(entries[0].seq).toBeLessThan(entries[1].seq);
       expect(entries[1].seq).toBeLessThan(entries[2].seq);
       expect(await s.listLinks()).toEqual([a]);
+      expect(await s.peekOutboxHead()).toEqual(entries[0]);
 
       await s.removeOutbox(entries[1].seq);
       expect((await s.peekOutbox()).map((e) => e.mutation)).toEqual([m1, m3]);
+
+      await s.removeOutbox(entries[0].seq);
+      expect(await s.peekOutboxHead()).toEqual(entries[2]);
+      await s.apply({ mutations: [m1] });
 
       await s.removeOutbox(entries[2].seq);
       await s.apply({ mutations: [m2] });
       const after = await s.peekOutbox();
       expect(after.map((e) => e.mutation)).toEqual([m1, m2]);
-      expect(after[1].seq).toBeGreaterThan(entries[2].seq);
+      expect(after[0].seq).toBeGreaterThan(entries[2].seq);
+      expect(after[1].seq).toBeGreaterThan(after[0].seq);
+      expect(await s.peekOutboxHead()).toEqual(after[0]);
     });
 
     it('keeps one cursor per table', async () => {
@@ -87,6 +95,7 @@ export function describeLocalStoreContract(
       expect(await s.listLinks()).toEqual([]);
       expect(await s.listCategories()).toEqual([]);
       expect(await s.peekOutbox()).toEqual([]);
+      expect(await s.peekOutboxHead()).toBeUndefined();
       expect(await s.getCursor('links')).toBeNull();
     });
   });
