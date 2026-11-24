@@ -116,6 +116,24 @@ describe('live Supabase project', () => {
     expect(tombstone?.deleted_at).not.toBeNull();
   });
 
+  it('pulls every row exactly once when each page holds a single row', async () => {
+    const category = await saveCategory('Smoke paging');
+    const ids: string[] = [];
+    for (let i = 0; i < 3; i++) ids.push((await saveLink(category.id)).id);
+    const saved = (await remote.pullLinks(null)).filter((l) => ids.includes(l.id));
+    expect(saved).toHaveLength(3);
+    // Just before the oldest of the new rows, so the pull covers at least those three.
+    const since = new Date(Math.min(...saved.map((l) => Date.parse(l.updated_at))) - 1).toISOString();
+
+    const expected = (await remote.pullLinks(since)).map((l) => l.id);
+    const paged = (await new SupabaseRemote(client, { pageSize: 1 }).pullLinks(since)).map((l) => l.id);
+
+    expect(paged.length).toBeGreaterThanOrEqual(3);
+    expect(new Set(paged).size).toBe(paged.length);
+    expect(paged).toEqual(expect.arrayContaining(ids));
+    expect(paged).toEqual(expected);
+  });
+
   it('shows nothing to a signed-out client', async () => {
     const anon = createLinkstashClient(url, publishableKey, memoryStorage());
     const { data } = await anon.from('links').select('id').limit(1);
