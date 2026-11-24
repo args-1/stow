@@ -26,7 +26,7 @@ export interface LibraryProps {
 function Brand({ className = '' }: { className?: string }) {
   return (
     <p className={`flex items-center gap-2 font-semibold ${className}`}>
-      <Bookmark aria-hidden="true" className="size-5 text-indigo-600 dark:text-indigo-400" />
+      <Bookmark aria-hidden="true" className="size-5 text-accent-strong" />
       Stow
     </p>
   );
@@ -34,8 +34,8 @@ function Brand({ className = '' }: { className?: string }) {
 
 const addButtonClass =
   'fixed right-4 bottom-[calc(1.5rem+env(safe-area-inset-bottom))] z-30 inline-flex size-14 items-center ' +
-  'justify-center gap-2 rounded-full bg-indigo-600 text-white shadow-lg hover:bg-indigo-500 ' +
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 ' +
+  'justify-center gap-2 rounded-full bg-accent text-on-accent shadow-lg hover:bg-accent-hover ' +
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-strong ' +
   'md:static md:h-auto md:w-auto md:rounded-lg md:px-4 md:py-2 md:text-sm md:font-medium md:shadow-none';
 
 export function Library({ share = null, onShareOpened }: LibraryProps) {
@@ -86,8 +86,8 @@ export function Library({ share = null, onShareOpened }: LibraryProps) {
     <div className="min-h-dvh md:grid md:grid-cols-[15rem_minmax(0,1fr)] md:grid-rows-[auto_1fr]">
       <header
         className={
-          'sticky top-0 z-30 border-b border-slate-200 bg-slate-50 pt-[env(safe-area-inset-top)] ' +
-          'md:col-start-2 md:row-start-1 dark:border-slate-800 dark:bg-slate-950'
+          'sticky top-0 z-30 border-b border-line bg-canvas pt-[env(safe-area-inset-top)] ' +
+          'md:col-start-2 md:row-start-1'
         }
       >
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-2 px-4 py-2">
@@ -109,8 +109,8 @@ export function Library({ share = null, onShareOpened }: LibraryProps) {
       </header>
       <aside
         className={
-          'border-b border-slate-200 px-4 py-3 md:sticky md:top-0 md:col-start-1 md:row-span-2 md:row-start-1 ' +
-          'md:h-dvh md:overflow-y-auto md:border-r md:border-b-0 md:py-4 dark:border-slate-800'
+          'border-b border-line px-4 py-3 md:sticky md:top-0 md:col-start-1 md:row-span-2 md:row-start-1 ' +
+          'md:h-dvh md:overflow-y-auto md:border-r md:border-b-0 md:py-4'
         }
       >
         <Brand className="mb-6 hidden px-3 md:flex" />

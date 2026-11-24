@@ -39,7 +39,7 @@ interface HeaderProps {
 function Header({ appUrl, onSignOut }: HeaderProps) {
   return (
     <header className="mb-4 flex items-center gap-3">
-      <p className="flex items-center gap-2 text-sm font-semibold text-indigo-600 dark:text-indigo-400">
+      <p className="flex items-center gap-2 text-sm font-semibold text-accent-strong">
         <Bookmark aria-hidden="true" className="size-4" />
         Stow
       </p>
@@ -47,7 +47,7 @@ function Header({ appUrl, onSignOut }: HeaderProps) {
         href={appUrl}
         target="_blank"
         rel="noreferrer"
-        className="ml-auto inline-flex items-center gap-1 text-xs text-slate-600 hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400"
+        className="ml-auto inline-flex items-center gap-1 text-xs text-ink-muted hover:text-accent-strong"
       >
         Open Stow
         <ExternalLink aria-hidden="true" className="size-3.5" />
@@ -56,7 +56,7 @@ function Header({ appUrl, onSignOut }: HeaderProps) {
         <button
           type="button"
           onClick={onSignOut}
-          className="text-xs text-slate-600 hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400"
+          className="text-xs text-ink-muted hover:text-accent-strong"
         >
           Sign out
         </button>
@@ -73,7 +73,7 @@ function Popup({ services }: { services: Services }) {
     <>
       <Header appUrl={services.config.appUrl} onSignOut={session.status === 'ready' && session.session ? signOut : undefined} />
       {session.status === 'loading' ? (
-        <p role="status" className="text-sm text-slate-500 dark:text-slate-400">
+        <p role="status" className="text-sm text-ink-muted">
           Loading…
         </p>
       ) : session.session ? (

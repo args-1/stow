@@ -81,7 +81,7 @@ export function AuthForm({ title = 'Sign in to Stow', onSignIn, onSignUp }: Auth
       </button>
       <button
         type="button"
-        className="w-full text-center text-sm text-indigo-600 hover:underline dark:text-indigo-400"
+        className="w-full text-center text-sm text-accent-strong hover:underline"
         onClick={() => {
           setMode(signingUp ? 'signIn' : 'signUp');
           setResult({});

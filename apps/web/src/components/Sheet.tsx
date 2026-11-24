@@ -33,7 +33,7 @@ export function Sheet({ title, onClose, children }: SheetProps) {
 
   return (
     <div className="fixed inset-0 z-40 flex items-end justify-center sm:items-center sm:p-4">
-      <div aria-hidden="true" className="absolute inset-0 bg-slate-950/50" onMouseDown={() => onCloseRef.current()} />
+      <div aria-hidden="true" className="absolute inset-0 bg-black/50" onMouseDown={() => onCloseRef.current()} />
       <div
         ref={panelRef}
         role="dialog"
@@ -41,11 +41,11 @@ export function Sheet({ title, onClose, children }: SheetProps) {
         aria-labelledby={titleId}
         tabIndex={-1}
         className={
-          'relative flex max-h-[90dvh] w-full flex-col rounded-t-2xl bg-white shadow-xl focus:outline-none ' +
-          'sm:max-w-lg sm:rounded-2xl dark:bg-slate-900'
+          'relative flex max-h-[90dvh] w-full flex-col rounded-t-2xl bg-surface shadow-xl focus:outline-none ' +
+          'sm:max-w-lg sm:rounded-2xl'
         }
       >
-        <div className="flex items-center justify-between border-b border-slate-200 py-2 pr-2 pl-4 dark:border-slate-800">
+        <div className="flex items-center justify-between border-b border-line py-2 pr-2 pl-4">
           <h2 id={titleId} className="font-semibold">
             {title}
           </h2>

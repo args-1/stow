@@ -22,8 +22,8 @@ export interface FilterNavProps {
 const itemClass = (selected: boolean) =>
   'inline-flex shrink-0 items-center gap-2 rounded-lg px-3 py-1.5 text-sm md:w-full ' +
   (selected
-    ? 'bg-indigo-600 text-white'
-    : 'text-slate-700 hover:bg-slate-200/70 dark:text-slate-300 dark:hover:bg-slate-800');
+    ? 'bg-highlight text-ink'
+    : 'text-ink-muted hover:bg-highlight/70');
 
 export function FilterNav(props: FilterNavProps) {
   const { view, onViewChange, categoryId, onCategoryChange, categories, links, onManageCategories } = props;
@@ -47,7 +47,7 @@ export function FilterNav(props: FilterNavProps) {
         ))}
       </div>
       <div className="flex items-center gap-2 overflow-x-auto pb-1 md:block md:space-y-1 md:overflow-visible md:pb-0">
-        <h2 className="hidden px-3 text-xs font-semibold tracking-wide text-slate-500 uppercase md:block">Categories</h2>
+        <h2 className="hidden px-3 text-xs font-semibold tracking-wide text-ink-muted uppercase md:block">Categories</h2>
         {list.length > 0 && (
           <div role="group" aria-label="Category filter" className="flex gap-2 md:flex-col md:gap-1">
             {list.map((category) => {

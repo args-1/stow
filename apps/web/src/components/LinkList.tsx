@@ -25,7 +25,7 @@ export function LinkList({ links, categories, query, actions, onEdit }: LinkList
   if (visible.length === 0) {
     const hasLinks = links.some((link) => !link.deleted_at);
     return (
-      <p className="py-16 text-center text-sm text-slate-500 dark:text-slate-400">
+      <p className="py-16 text-center text-sm text-ink-muted">
         {hasLinks ? 'No links match these filters.' : 'No links yet. Add your first one with "Add link".'}
       </p>
     );

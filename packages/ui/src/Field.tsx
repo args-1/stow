@@ -15,7 +15,7 @@ export function Field({ id, label, hint, children }: FieldProps) {
         {label}
       </label>
       {children}
-      {hint && <p className="text-xs text-slate-500 dark:text-slate-400">{hint}</p>}
+      {hint && <p className="text-xs text-ink-muted">{hint}</p>}
     </div>
   );
 }

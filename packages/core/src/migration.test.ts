@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { PGlite } from '@electric-sql/pglite';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { CATEGORY_ICONS } from './schema';
 
 const MIGRATION = readFileSync(new URL('../../../supabase/migrations/0001_init.sql', import.meta.url), 'utf8');
 const MIGRATION_0002 = readFileSync(
@@ -181,6 +182,13 @@ describe('0002_category_icons.sql', () => {
       expect(await rows('select icon from public.categories where id = $1', [FRESH])).toEqual([{ icon: 'folder' }]);
       await db.query(`update public.categories set icon = 'briefcase' where id = $1`, [FRESH]);
       expect(await rows('select icon from public.categories where id = $1', [FRESH])).toEqual([{ icon: 'briefcase' }]);
+    });
+  });
+
+  it.each(CATEGORY_ICONS)('accepts the icon name %j', async (icon) => {
+    await as(ALICE, async () => {
+      await db.query('update public.categories set icon = $1 where id = $2', [icon, FRESH]);
+      expect(await rows('select icon from public.categories where id = $1', [FRESH])).toEqual([{ icon }]);
     });
   });
 

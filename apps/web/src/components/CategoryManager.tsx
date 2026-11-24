@@ -120,9 +120,9 @@ export function CategoryManager({ categories, links, actions }: CategoryManagerP
         }
       />
       {list.length === 0 ? (
-        <p className="text-sm text-slate-500 dark:text-slate-400">No categories yet.</p>
+        <p className="text-sm text-ink-muted">No categories yet.</p>
       ) : (
-        <ul aria-label="Categories" className="divide-y divide-slate-200 dark:divide-slate-800">
+        <ul aria-label="Categories" className="divide-y divide-line">
           {list.map((category) => (
             <li key={category.id} className="py-2">
               {editingId === category.id ? (
@@ -138,7 +138,7 @@ export function CategoryManager({ categories, links, actions }: CategoryManagerP
                 <div className="flex items-center gap-3">
                   <CategoryIcon icon={category.icon} color={category.color} />
                   <span className="min-w-0 flex-1 truncate font-medium">{category.name}</span>
-                  <span className="shrink-0 text-xs text-slate-500 dark:text-slate-400">
+                  <span className="shrink-0 text-xs text-ink-muted">
                     {linkCount(counts[category.id] ?? 0)}
                   </span>
                   <IconButton label={`Edit ${category.name}`} onClick={() => setEditingId(category.id)}>

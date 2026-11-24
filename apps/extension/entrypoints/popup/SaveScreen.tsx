@@ -101,7 +101,7 @@ export function SaveScreen({ services }: { services: Services }) {
 
   if (view.status === 'loading') {
     return (
-      <p role="status" className="text-sm text-slate-500 dark:text-slate-400">
+      <p role="status" className="text-sm text-ink-muted">
         Loading…
       </p>
     );
@@ -129,7 +129,7 @@ export function SaveScreen({ services }: { services: Services }) {
     return (
       <div className="space-y-3">
         {removed && (
-          <p role="status" className="text-sm text-slate-600 dark:text-slate-300">
+          <p role="status" className="text-sm text-ink-muted">
             Removed from Stow.
           </p>
         )}
@@ -182,7 +182,7 @@ export function SaveScreen({ services }: { services: Services }) {
       </p>
       <PagePreview url={link.url} title={displayTitle(link)} description={link.description} faviconUrl={link.favicon_url} />
       {(category || link.tags.length > 0) && (
-        <p className="flex flex-wrap items-center gap-2 text-xs text-slate-600 dark:text-slate-300">
+        <p className="flex flex-wrap items-center gap-2 text-xs text-ink-muted">
           {category && (
             <span className="inline-flex items-center gap-1">
               <CategoryIcon icon={category.icon} color={category.color} className="size-3.5" />

@@ -65,12 +65,14 @@ async function importLegacyDb(db: StowDb, legacyName: string): Promise<void> {
   const legacy = openDb(legacyName, null);
   let rows: [Link[], Category[], OutboxEntry[], MetaRow[]];
   try {
-    rows = await Promise.all([
-      legacy.links.toArray(),
-      legacy.categories.toArray(),
-      legacy.outbox.orderBy('seq').toArray(),
-      legacy.meta.toArray(),
-    ]);
+    rows = await legacy.transaction('r', legacy.tables, () =>
+      Promise.all([
+        legacy.links.toArray(),
+        legacy.categories.toArray(),
+        legacy.outbox.orderBy('seq').toArray(),
+        legacy.meta.toArray(),
+      ]),
+    );
   } finally {
     legacy.close();
   }

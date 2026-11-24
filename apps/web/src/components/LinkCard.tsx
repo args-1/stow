@@ -20,11 +20,11 @@ export function LinkCard({ link, category, onOpen, onToggleFavorite, onToggleArc
   return (
     <li
       className={
-        'relative flex aspect-square flex-col gap-2 overflow-hidden rounded-xl border border-slate-200 bg-white p-2.5 ' +
-        'shadow-sm has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-indigo-500/50 dark:border-slate-800 dark:bg-slate-900'
+        'relative flex aspect-square flex-col gap-2 overflow-hidden rounded-xl border border-line bg-surface p-2.5 ' +
+        'shadow-sm has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-accent-strong'
       }
     >
-      <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+      <div className="flex items-center gap-1.5 text-xs text-ink-muted">
         <img
           src={link.favicon_url ?? fallbackIcon}
           alt=""
@@ -54,8 +54,8 @@ export function LinkCard({ link, category, onOpen, onToggleFavorite, onToggleArc
           if (event.button === 1) onOpen();
         }}
         className={
-          'line-clamp-3 text-sm font-medium break-words after:absolute after:inset-0 hover:text-indigo-600 ' +
-          'focus-visible:outline-none dark:hover:text-indigo-400'
+          'line-clamp-3 text-sm font-medium break-words after:absolute after:inset-0 hover:text-accent-strong ' +
+          'focus-visible:outline-none'
         }
       >
         {displayTitle(link)}

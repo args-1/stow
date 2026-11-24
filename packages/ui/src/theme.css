@@ -1,0 +1,59 @@
+/*
+ * Stow's colour roles. Each --stow-* value switches with prefers-color-scheme, and @theme inline exposes it to
+ * Tailwind as a colour (bg-canvas, text-ink, ring-accent-strong, ...). theme.test.ts checks their contrast.
+ */
+:root {
+  --stow-canvas: #fefaf3;
+  --stow-surface: #ffffff;
+  --stow-surface-muted: #fefaf3;
+  --stow-line: #b8cfb3;
+  --stow-ink: #1e2620;
+  --stow-ink-muted: #5f6b5d;
+  --stow-ink-faint: #7a8577;
+  --stow-accent: #84a282;
+  --stow-accent-hover: #9ab597;
+  --stow-on-accent: #1e2620;
+  --stow-accent-strong: #4f6b4d;
+  --stow-highlight: #f6e2e9;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --stow-canvas: #161c17;
+    --stow-surface: #1f2720;
+    --stow-surface-muted: #1a211b;
+    --stow-line: #344033;
+    --stow-ink: #fefaf3;
+    --stow-ink-muted: #b3bdb0;
+    --stow-ink-faint: #7f8a7c;
+    --stow-accent: #b8cfb3;
+    --stow-accent-hover: #cadcc6;
+    --stow-on-accent: #161c17;
+    --stow-accent-strong: #b8cfb3;
+    --stow-highlight: rgb(246 226 233 / 0.12);
+  }
+}
+
+@theme inline {
+  --color-canvas: var(--stow-canvas);
+  --color-surface: var(--stow-surface);
+  --color-surface-muted: var(--stow-surface-muted);
+  --color-line: var(--stow-line);
+  --color-ink: var(--stow-ink);
+  --color-ink-muted: var(--stow-ink-muted);
+  --color-ink-faint: var(--stow-ink-faint);
+  --color-accent: var(--stow-accent);
+  --color-accent-hover: var(--stow-accent-hover);
+  --color-on-accent: var(--stow-on-accent);
+  --color-accent-strong: var(--stow-accent-strong);
+  --color-highlight: var(--stow-highlight);
+}
+
+@layer base {
+  html {
+    color-scheme: light dark;
+  }
+  body {
+    @apply bg-canvas text-ink antialiased;
+  }
+}

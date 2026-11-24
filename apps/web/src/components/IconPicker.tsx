@@ -30,9 +30,9 @@ export function IconPicker({ value, color, onChange, label = 'Icon' }: IconPicke
               aria-hidden="true"
               title={option.label}
               className={
-                'flex size-9 items-center justify-center rounded-lg bg-slate-100 ring-offset-2 ring-offset-white ' +
-                'peer-checked:ring-2 peer-checked:ring-slate-900 peer-focus-visible:ring-2 peer-focus-visible:ring-indigo-500 ' +
-                'dark:bg-slate-800 dark:ring-offset-slate-900 dark:peer-checked:ring-white'
+                'flex size-9 items-center justify-center rounded-lg bg-surface-muted ring-offset-2 ring-offset-surface ' +
+                'peer-checked:ring-2 peer-checked:ring-ink peer-focus-visible:ring-2 ' +
+                'peer-focus-visible:ring-accent-strong'
               }
             >
               <CategoryIcon icon={option.name} color={color} className="size-5" />

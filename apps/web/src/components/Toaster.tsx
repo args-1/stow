@@ -11,7 +11,7 @@ export function Toaster() {
           role={t.kind === 'error' ? 'alert' : 'status'}
           className={
             'pointer-events-auto flex w-full max-w-md items-center gap-3 rounded-lg px-4 py-3 text-sm shadow-lg ' +
-            (t.kind === 'error' ? 'bg-red-600 text-white' : 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900')
+            (t.kind === 'error' ? 'bg-red-600 text-white' : 'bg-ink text-canvas')
           }
         >
           <span className="flex-1">{t.message}</span>

@@ -11,7 +11,7 @@ export function PagePreview({ url, title, description, faviconUrl }: PagePreview
   const fallbackIcon = faviconFallback(url);
 
   return (
-    <div className="flex gap-3 rounded-xl border border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-900">
+    <div className="flex gap-3 rounded-xl border border-line bg-surface p-3">
       <img
         src={faviconUrl || fallbackIcon}
         alt=""
@@ -25,8 +25,8 @@ export function PagePreview({ url, title, description, faviconUrl }: PagePreview
       />
       <div className="min-w-0 space-y-0.5">
         <p className="truncate text-sm font-medium">{title}</p>
-        <p className="truncate text-xs text-slate-500 dark:text-slate-400">{hostname(url)}</p>
-        {description && <p className="line-clamp-2 text-xs text-slate-600 dark:text-slate-300">{description}</p>}
+        <p className="truncate text-xs text-ink-muted">{hostname(url)}</p>
+        {description && <p className="line-clamp-2 text-xs text-ink-muted">{description}</p>}
       </div>
     </div>
   );

@@ -1,19 +1,18 @@
 // `:read-only` also matches every <select>, so the read-only look is limited to text controls.
 export const inputClass =
-  'w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 ' +
-  'focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 ' +
-  '[&:is(input,textarea):read-only]:bg-slate-50 [&:is(input,textarea):read-only]:text-slate-500 ' +
-  'disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 ' +
-  'dark:[&:is(input,textarea):read-only]:bg-slate-800 dark:[&:is(input,textarea):read-only]:text-slate-400';
+  'w-full rounded-lg border border-line bg-surface px-3 py-2 text-sm text-ink placeholder:text-ink-faint ' +
+  'focus:border-accent-strong focus:outline-none focus:ring-2 focus:ring-accent-strong/30 ' +
+  '[&:is(input,textarea):read-only]:bg-surface-muted [&:is(input,textarea):read-only]:text-ink-muted ' +
+  'disabled:opacity-60';
 
 export const buttonClass =
-  'inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white ' +
-  'hover:bg-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 ' +
+  'inline-flex items-center justify-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-on-accent ' +
+  'hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-strong ' +
   'disabled:cursor-not-allowed disabled:opacity-60';
 
 export const secondaryButtonClass =
-  'inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium ' +
-  'text-slate-700 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 ' +
-  'disabled:opacity-60 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800';
+  'inline-flex items-center justify-center gap-2 rounded-lg border border-line px-4 py-2 text-sm font-medium ' +
+  'text-ink hover:bg-highlight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-strong ' +
+  'disabled:opacity-60';
 
-export const labelClass = 'block text-xs font-medium text-slate-600 dark:text-slate-400';
+export const labelClass = 'block text-xs font-medium text-ink-muted';

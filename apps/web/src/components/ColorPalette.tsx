@@ -42,8 +42,8 @@ export function ColorPalette({ value, onChange, label = 'Color' }: ColorPaletteP
               aria-hidden="true"
               title={COLOR_NAMES[color]}
               className={
-                'block size-7 rounded-full ring-offset-2 ring-offset-white peer-checked:ring-2 peer-checked:ring-slate-900 ' +
-                'peer-focus-visible:ring-2 peer-focus-visible:ring-indigo-500 dark:ring-offset-slate-900 dark:peer-checked:ring-white'
+                'block size-7 rounded-full ring-offset-2 ring-offset-surface peer-checked:ring-2 ' +
+                'peer-checked:ring-ink peer-focus-visible:ring-2 peer-focus-visible:ring-accent-strong'
               }
               style={{ backgroundColor: color }}
             />

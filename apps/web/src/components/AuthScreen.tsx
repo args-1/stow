@@ -25,8 +25,8 @@ export function AuthScreen({ supabase, online }: AuthScreenProps) {
 
   return (
     <main className="flex min-h-dvh items-center justify-center p-4">
-      <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        <p className="mb-4 flex items-center gap-2 text-sm font-semibold text-indigo-600 dark:text-indigo-400">
+      <div className="w-full max-w-sm rounded-2xl border border-line bg-surface p-6 shadow-sm">
+        <p className="mb-4 flex items-center gap-2 text-sm font-semibold text-accent-strong">
           <Bookmark aria-hidden="true" className="size-4" />
           Stow
         </p>

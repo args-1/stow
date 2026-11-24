@@ -22,7 +22,7 @@ export function Toolbar({ search, onSearchChange, sort, onSortChange }: ToolbarP
       <div className="relative min-w-0 flex-1">
         <Search
           aria-hidden="true"
-          className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-slate-400"
+          className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-ink-faint"
         />
         <input
           type="search"
