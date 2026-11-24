@@ -13,6 +13,16 @@ describe('parseSharedLink', () => {
     expect(parse(`text=${text}`)).toEqual({ url: 'https://example.com/post?id=1', title: null });
   });
 
+  it('keeps a closing parenthesis that belongs to the URL', () => {
+    const text = encodeURIComponent('https://en.wikipedia.org/wiki/Python_(programming_language)');
+    expect(parse(`text=${text}`)).toEqual({ url: 'https://en.wikipedia.org/wiki/Python_(programming_language)', title: null });
+  });
+
+  it('drops sentence punctuation after a URL with balanced parentheses', () => {
+    const text = encodeURIComponent('(see https://example.com/a_(b)).');
+    expect(parse(`text=${text}`)).toEqual({ url: 'https://example.com/a_(b)', title: null });
+  });
+
   it('accepts a bare domain as the text', () => {
     expect(parse('text=example.org')).toEqual({ url: 'https://example.org/', title: null });
   });
