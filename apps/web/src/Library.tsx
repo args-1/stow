@@ -90,7 +90,7 @@ export function Library({ share = null, onShareOpened }: LibraryProps) {
           'md:col-start-2 md:row-start-1 dark:border-slate-800 dark:bg-slate-950'
         }
       >
-        <div className="mx-auto flex max-w-3xl flex-wrap items-center gap-2 px-4 py-2">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-2 px-4 py-2">
           <Brand className="md:hidden" />
           <div className="order-last w-full md:order-none md:w-auto md:flex-1">
             <Toolbar search={search} onSearchChange={setSearch} sort={sort} onSortChange={setSort} />
@@ -124,7 +124,7 @@ export function Library({ share = null, onShareOpened }: LibraryProps) {
           onManageCategories={() => setSheet({ kind: 'categories' })}
         />
       </aside>
-      <main className="mx-auto w-full max-w-3xl px-4 pt-4 pb-28 md:col-start-2 md:row-start-2 md:pb-8">
+      <main className="mx-auto w-full max-w-6xl px-4 pt-4 pb-28 md:col-start-2 md:row-start-2 md:pb-8">
         {links && categories && (
           <LinkList links={links} categories={categories} query={query} actions={actions} onEdit={openEdit} />
         )}

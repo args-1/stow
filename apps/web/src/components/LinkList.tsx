@@ -40,7 +40,7 @@ export function LinkList({ links, categories, query, actions, onEdit }: LinkList
   }
 
   return (
-    <ul className="space-y-2" aria-label="Links">
+    <ul className="grid grid-cols-[repeat(auto-fill,minmax(9.5rem,1fr))] gap-3" aria-label="Links">
       {visible.map((link) => (
         <LinkCard
           key={link.id}

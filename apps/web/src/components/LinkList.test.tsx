@@ -13,6 +13,7 @@ const banana = makeLink({
   id: 'banana',
   title: 'Banana bread',
   url: 'https://bake.example/banana',
+  description: 'Moist and easy',
   tags: ['recipes'],
   category_id: 'cat-food',
   visit_count: 5,
@@ -67,20 +68,34 @@ const titles = () => screen.queryAllByRole('link').map((a) => a.textContent);
 const card = (title: string) => screen.getByRole('link', { name: title }).closest('li')!;
 
 describe('LinkList', () => {
-  it('lists live, unarchived links newest first, with host, tags and active category', () => {
+  it('shows live, unarchived links newest first as compact cards', () => {
     render(list());
     expect(titles()).toEqual(['Banana bread', 'Apple pie']);
 
     const bananaCard = within(card('Banana bread'));
-    expect(bananaCard.getByText('Food')).toBeTruthy();
-    expect(card('Banana bread').querySelector('svg.lucide-utensils')).not.toBeNull();
     expect(bananaCard.getByText('bake.example')).toBeTruthy();
-    expect(bananaCard.getByText('#recipes')).toBeTruthy();
-    expect(screen.queryByText('Gone')).toBeNull();
+    expect(screen.getByRole('link', { name: 'Banana bread' }).classList.contains('line-clamp-3')).toBe(true);
+    const category = bananaCard.getByRole('img', { name: 'Category: Food' });
+    expect(category.getAttribute('title')).toBe('Food');
+    expect(category.querySelector('svg.lucide-utensils')).not.toBeNull();
+    expect(bananaCard.getAllByRole('button').map((b) => b.getAttribute('aria-label'))).toEqual([
+      'Favorite',
+      'Archive',
+      'Edit',
+      'Delete',
+    ]);
+
+    // Cards no longer show the description or tags, and a deleted category shows nothing.
+    expect(bananaCard.queryByText('Moist and easy')).toBeNull();
+    expect(bananaCard.queryByText('#recipes')).toBeNull();
+    expect(within(card('Apple pie')).queryByRole('img')).toBeNull();
   });
 
   it('applies search, category, view and sort from the query', () => {
     const { rerender } = render(list({ search: '#recipes' }));
+    expect(titles()).toEqual(['Banana bread']);
+    // The description is hidden on the card but still searchable.
+    rerender(list({ search: 'moist' }));
     expect(titles()).toEqual(['Banana bread']);
 
     rerender(list({ categoryId: 'cat-food' }));
