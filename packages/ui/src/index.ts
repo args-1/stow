@@ -1,5 +1,5 @@
 export * from './styles';
-export * from './ColorDot';
+export * from './CategoryIcon';
 export * from './Field';
 export * from './CategoryPicker';
 export * from './LinkForm';

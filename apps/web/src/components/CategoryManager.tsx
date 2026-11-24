@@ -10,7 +10,7 @@ import {
   type Link,
   type Result,
 } from '@stow/core';
-import { buttonClass, ColorDot, Field, inputClass, secondaryButtonClass } from '@stow/ui';
+import { buttonClass, CategoryIcon, Field, inputClass, secondaryButtonClass } from '@stow/ui';
 import { Pencil, Trash2 } from 'lucide-react';
 import { useId, useMemo, useState, type FormEvent } from 'react';
 import type { Actions } from '../actions';
@@ -134,7 +134,7 @@ export function CategoryManager({ categories, links, actions }: CategoryManagerP
                 />
               ) : (
                 <div className="flex items-center gap-3">
-                  <ColorDot color={category.color} />
+                  <CategoryIcon icon={category.icon} color={category.color} />
                   <span className="min-w-0 flex-1 truncate font-medium">{category.name}</span>
                   <span className="shrink-0 text-xs text-slate-500 dark:text-slate-400">
                     {linkCount(counts[category.id] ?? 0)}

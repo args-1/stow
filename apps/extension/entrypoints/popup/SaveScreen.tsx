@@ -9,7 +9,7 @@ import {
   type Link,
   type SupabaseRemote,
 } from '@stow/core';
-import { buttonClass, ColorDot, LinkForm, linkFormValues, secondaryButtonClass } from '@stow/ui';
+import { buttonClass, CategoryIcon, LinkForm, linkFormValues, secondaryButtonClass } from '@stow/ui';
 import { Check, Pencil, Star, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { activePage, type PageInfo } from '../../lib/page';
@@ -185,7 +185,7 @@ export function SaveScreen({ services }: { services: Services }) {
         <p className="flex flex-wrap items-center gap-2 text-xs text-slate-600 dark:text-slate-300">
           {category && (
             <span className="inline-flex items-center gap-1">
-              <ColorDot color={category.color} />
+              <CategoryIcon icon={category.icon} color={category.color} className="size-3.5" />
               {category.name}
             </span>
           )}

@@ -11,7 +11,8 @@
     "typecheck": "tsc -p ."
   },
   "dependencies": {
-    "@stow/core": "workspace:*"
+    "@stow/core": "workspace:*",
+    "lucide-react": "^1.78.0"
   },
   "peerDependencies": {
     "react": "^19.3.1"

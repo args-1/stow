@@ -44,6 +44,8 @@ describe('CategoryManager', () => {
     expect(within(rows[0]!).getByText('2 links')).toBeTruthy();
     expect(within(rows[1]!).getByText('Travel')).toBeTruthy();
     expect(within(rows[1]!).getByText('1 link')).toBeTruthy();
+    expect(rows[0]!.querySelector('svg.lucide-heart')).not.toBeNull();
+    expect(rows[1]!.querySelector('svg.lucide-plane')).not.toBeNull();
     expect(screen.queryByText('Old')).toBeNull();
   });
 

@@ -6,7 +6,7 @@ import { dismiss, getToasts } from '../toast';
 import { LinkList, type LinkActions } from './LinkList';
 import { Toaster } from './Toaster';
 
-const food = makeCategory({ id: 'cat-food', name: 'Food', color: '#ef4444' });
+const food = makeCategory({ id: 'cat-food', name: 'Food', color: '#ef4444', icon: 'utensils' });
 const gone = makeCategory({ id: 'cat-gone', name: 'Gone', deleted_at: '2026-01-05T00:00:00.000Z' });
 
 const banana = makeLink({
@@ -73,6 +73,7 @@ describe('LinkList', () => {
 
     const bananaCard = within(card('Banana bread'));
     expect(bananaCard.getByText('Food')).toBeTruthy();
+    expect(card('Banana bread').querySelector('svg.lucide-utensils')).not.toBeNull();
     expect(bananaCard.getByText('bake.example')).toBeTruthy();
     expect(bananaCard.getByText('#recipes')).toBeTruthy();
     expect(screen.queryByText('Gone')).toBeNull();

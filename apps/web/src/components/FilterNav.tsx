@@ -1,5 +1,5 @@
 import { activeCategories, countByCategory, type Category, type Link, type LinkView } from '@stow/core';
-import { ColorDot } from '@stow/ui';
+import { CategoryIcon } from '@stow/ui';
 import { Archive, Inbox, Settings2, Star, type LucideIcon } from 'lucide-react';
 import { useMemo } from 'react';
 
@@ -60,7 +60,7 @@ export function FilterNav(props: FilterNavProps) {
                   className={itemClass(selected)}
                   onClick={() => onCategoryChange(selected ? null : category.id)}
                 >
-                  <ColorDot color={category.color} />
+                  <CategoryIcon icon={category.icon} color={category.color} />
                   <span className="max-w-40 truncate md:flex-1 md:text-left">{category.name}</span>
                   <span className="text-xs opacity-70">{counts[category.id] ?? 0}</span>
                 </button>

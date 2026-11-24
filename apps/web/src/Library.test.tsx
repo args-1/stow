@@ -129,6 +129,7 @@ describe('Library', () => {
     fireEvent.click(within(dialog).getByRole('button', { name: 'Close' }));
 
     const filter = await screen.findByRole('group', { name: 'Category filter' });
-    expect(within(filter).getByRole('button', { name: /^Books/ })).toBeTruthy();
+    const books = within(filter).getByRole('button', { name: /^Books/ });
+    expect(books.querySelector('svg.lucide-folder')).not.toBeNull();
   });
 });

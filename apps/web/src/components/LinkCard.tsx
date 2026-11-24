@@ -1,5 +1,5 @@
 import { displayTitle, faviconFallback, hostname, type Category, type Link } from '@stow/core';
-import { ColorDot } from '@stow/ui';
+import { CategoryIcon } from '@stow/ui';
 import { Archive, ArchiveRestore, Pencil, Star, Trash2 } from 'lucide-react';
 import { IconButton } from './IconButton';
 
@@ -52,7 +52,7 @@ export function LinkCard({ link, category, onOpen, onToggleFavorite, onToggleArc
         <p className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
           {category && (
             <span className="inline-flex shrink-0 items-center gap-1">
-              <ColorDot color={category.color} />
+              <CategoryIcon icon={category.icon} color={category.color} className="size-3.5" />
               {category.name}
             </span>
           )}
