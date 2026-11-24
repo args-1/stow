@@ -27,6 +27,11 @@ describe('normalizeUrl', () => {
     expect(normalizeUrl('http://nas:8080/')).toBe('http://nas:8080/');
     expect(normalizeUrl('hello')).toBeNull();
   });
+  it('rejects bare numbers but accepts a dotted-quad IPv4 when no scheme is given', () => {
+    expect(normalizeUrl('42')).toBeNull();
+    expect(normalizeUrl('1.2')).toBeNull();
+    expect(normalizeUrl('192.168.1.10')).toBe('https://192.168.1.10/');
+  });
   it('rejects empty input, non-http schemes, and junk', () => {
     expect(normalizeUrl('')).toBeNull();
     expect(normalizeUrl('   ')).toBeNull();

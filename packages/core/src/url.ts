@@ -1,4 +1,5 @@
 const HAS_SCHEME = /^[a-z][a-z0-9+.-]*:\/\//i;
+const DOTTED_QUAD = /^\d{1,3}(\.\d{1,3}){3}$/;
 const TRACKING_PARAMS = new Set(['fbclid', 'gclid', 'mc_cid', 'mc_eid']);
 
 export function isHttpUrl(value: string): boolean {
@@ -21,6 +22,9 @@ export function normalizeUrl(input: string): string | null {
   if (!hadScheme) {
     // Guess-mode input ("example.com") must look like a real host, not "hello" or "mailto:x@y".
     if (u.username || u.password) return null;
+    // The parser turns "42" into 0.0.0.42, so check the host as typed: only a full dotted quad may be numeric.
+    const typedHost = trimmed.split(/[/?#]/)[0].replace(/:\d*$/, '');
+    if (/^[\d.]+$/.test(typedHost) && !DOTTED_QUAD.test(typedHost)) return null;
     const h = u.hostname;
     if (h !== 'localhost' && !h.includes('.') && !h.startsWith('[')) return null;
   }
