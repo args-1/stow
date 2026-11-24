@@ -124,12 +124,13 @@ describe('Library', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Manage categories' }));
     const dialog = screen.getByRole('dialog', { name: 'Manage categories' });
     fireEvent.change(within(dialog).getByLabelText('Name'), { target: { value: 'Books' } });
+    fireEvent.click(within(dialog).getByRole('radio', { name: 'Briefcase' }));
     fireEvent.click(within(dialog).getByRole('button', { name: 'Add category' }));
     await within(dialog).findByText('Books');
     fireEvent.click(within(dialog).getByRole('button', { name: 'Close' }));
 
     const filter = await screen.findByRole('group', { name: 'Category filter' });
     const books = within(filter).getByRole('button', { name: /^Books/ });
-    expect(books.querySelector('svg.lucide-folder')).not.toBeNull();
+    expect(books.querySelector('svg.lucide-briefcase')).not.toBeNull();
   });
 });

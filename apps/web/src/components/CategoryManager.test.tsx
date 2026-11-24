@@ -49,18 +49,21 @@ describe('CategoryManager', () => {
     expect(screen.queryByText('Old')).toBeNull();
   });
 
-  it('adds a category with the chosen color, then resets the form', async () => {
+  it('adds a category with the chosen color and icon, then resets the form', async () => {
     render(<CategoryManager categories={[food]} links={[]} actions={actions} />);
     expect(radio(newForm(), 'Orange').checked).toBe(true);
+    expect(radio(newForm(), 'Folder').checked).toBe(true);
 
     fireEvent.change(newForm().getByLabelText('Name'), { target: { value: 'Books' } });
     fireEvent.click(radio(newForm(), 'Teal'));
+    fireEvent.click(radio(newForm(), 'Briefcase'));
     fireEvent.click(newForm().getByRole('button', { name: 'Add category' }));
 
     await waitFor(() => expect((newForm().getByLabelText('Name') as HTMLInputElement).value).toBe(''));
-    expect(actions.addCategory).toHaveBeenCalledWith({ name: 'Books', color: '#14b8a6', icon: 'folder' });
+    expect(actions.addCategory).toHaveBeenCalledWith({ name: 'Books', color: '#14b8a6', icon: 'briefcase' });
     // Red and teal are now taken, so the next suggestion is orange again.
     expect(radio(newForm(), 'Orange').checked).toBe(true);
+    expect(radio(newForm(), 'Folder').checked).toBe(true);
   });
 
   it('shows a rejected category inline and keeps the input', async () => {
@@ -74,26 +77,30 @@ describe('CategoryManager', () => {
     expect((newForm().getByLabelText('Name') as HTMLInputElement).value).toBe('food');
   });
 
-  it('renames and recolors a category', async () => {
+  it('renames, recolors and changes the icon of a category', async () => {
     render(<CategoryManager categories={[food]} links={[]} actions={actions} />);
     fireEvent.click(screen.getByRole('button', { name: 'Edit Food' }));
 
     const form = within(screen.getByRole('form', { name: 'Edit Food' }));
     expect(radio(form, 'Red').checked).toBe(true);
+    expect(radio(form, 'Heart').checked).toBe(true);
     fireEvent.change(form.getByLabelText('Name'), { target: { value: 'Groceries' } });
     fireEvent.click(radio(form, 'Green'));
+    fireEvent.click(radio(form, 'Coffee'));
     fireEvent.click(form.getByRole('button', { name: 'Save' }));
 
     await waitFor(() => expect(screen.queryByRole('form', { name: 'Edit Food' })).toBeNull());
-    expect(actions.editCategory).toHaveBeenCalledWith('cat-food', { name: 'Groceries', color: '#22c55e', icon: 'heart' });
+    expect(actions.editCategory).toHaveBeenCalledWith('cat-food', { name: 'Groceries', color: '#22c55e', icon: 'coffee' });
   });
 
-  it('saves a category whose icon this build does not know as folder', async () => {
+  it('edits a category whose icon this build does not know as folder', async () => {
     const odd = makeCategory({ id: 'cat-odd', name: 'Odd', color: '#ef4444', icon: 'unicorn' });
     render(<CategoryManager categories={[odd]} links={[]} actions={actions} />);
     fireEvent.click(screen.getByRole('button', { name: 'Edit Odd' }));
 
-    fireEvent.click(within(screen.getByRole('form', { name: 'Edit Odd' })).getByRole('button', { name: 'Save' }));
+    const form = within(screen.getByRole('form', { name: 'Edit Odd' }));
+    expect(radio(form, 'Folder').checked).toBe(true);
+    fireEvent.click(form.getByRole('button', { name: 'Save' }));
 
     await waitFor(() => expect(screen.queryByRole('form', { name: 'Edit Odd' })).toBeNull());
     expect(actions.editCategory).toHaveBeenCalledWith('cat-odd', { name: 'Odd', color: '#ef4444', icon: 'folder' });

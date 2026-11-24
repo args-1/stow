@@ -17,6 +17,7 @@ import type { Actions } from '../actions';
 import { errorText, toast } from '../toast';
 import { ColorPalette } from './ColorPalette';
 import { IconButton } from './IconButton';
+import { IconPicker } from './IconPicker';
 
 export type CategoryActions = Pick<Actions, 'addCategory' | 'editCategory' | 'deleteCategory'>;
 
@@ -39,7 +40,7 @@ function CategoryForm({ label, initial, submitLabel, onSubmit, onDone, onCancel 
   const id = useId();
   const [name, setName] = useState(initial.name);
   const [color, setColor] = useState(initial.color);
-  const [icon] = useState(() => categoryIconName(initial.icon));
+  const [icon, setIcon] = useState(() => categoryIconName(initial.icon));
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
@@ -73,6 +74,7 @@ function CategoryForm({ label, initial, submitLabel, onSubmit, onDone, onCancel 
         />
       </Field>
       <ColorPalette value={color} onChange={setColor} />
+      <IconPicker value={icon} color={color} onChange={setIcon} />
       {error && (
         <p role="alert" className="text-sm text-red-600 dark:text-red-400">
           {error}
