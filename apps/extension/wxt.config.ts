@@ -9,7 +9,7 @@ export default defineConfig({
   manifest: ({ browser }) => ({
     name: 'Linkstash',
     description: 'Save the current page or any link to your Linkstash library.',
-    permissions: ['activeTab', 'scripting', 'storage'],
+    permissions: ['activeTab', 'contextMenus', 'scripting', 'storage'],
     commands: {
       _execute_action: { suggested_key: { default: 'Alt+Shift+S' } },
     },
