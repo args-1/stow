@@ -25,7 +25,11 @@ export function getServices(): Services | null {
     if (!config) {
       services = null;
     } else {
-      const supabase = createLinkstashClient(config.supabaseUrl, config.supabasePublishableKey, extensionAuthStorage);
+      // No background refresh ticker: its storage read every 30 s would keep the MV3 service worker from ever going
+      // idle. supabase-js and hasSession()'s getSession() refresh an expired token on demand.
+      const supabase = createLinkstashClient(config.supabaseUrl, config.supabasePublishableKey, extensionAuthStorage, {
+        autoRefreshToken: false,
+      });
       services = {
         config,
         supabase,
