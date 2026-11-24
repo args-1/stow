@@ -54,7 +54,7 @@ The packages ship TypeScript source with no build step of their own. Vite and WX
 
 ## Prerequisites
 
-- Node.js 22 or newer.
+- Node.js 24.15 or newer, or Node.js 22.22.2 or newer on the 22 line.
 - pnpm 11 or newer: `npm install -g pnpm@latest`.
 - A Supabase account. The free plan is enough.
 - Chrome, Edge or another Chromium browser, and/or Firefox 115 or newer.

@@ -2,7 +2,7 @@
   "name": "linkstash",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=22" },
+  "engines": { "node": "^22.22.2 || >=24.15.0" },
   "scripts": {
     "dev": "pnpm --filter @linkstash/web dev",
     "dev:ext": "pnpm --filter @linkstash/extension dev",
