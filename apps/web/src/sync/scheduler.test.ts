@@ -1,0 +1,131 @@
+import type { SyncResult } from '@linkstash/core';
+import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
+import { backoffDelay, createSyncScheduler, SYNC_INTERVAL_MS, type SyncScheduler } from './scheduler';
+
+let run: Mock<() => Promise<SyncResult>>;
+let onAuth: Mock<(attempt: number) => Promise<boolean>>;
+let onRetry: Mock<(failures: number) => void>;
+let onError: Mock<(error: unknown) => void>;
+let scheduler: SyncScheduler;
+
+const settle = () => vi.advanceTimersByTimeAsync(0);
+
+beforeEach(() => {
+  vi.useFakeTimers();
+  run = vi.fn<() => Promise<SyncResult>>(async () => 'ok');
+  onAuth = vi.fn<(attempt: number) => Promise<boolean>>(async () => false);
+  onRetry = vi.fn<(failures: number) => void>();
+  onError = vi.fn<(error: unknown) => void>();
+  scheduler = createSyncScheduler({ run, onAuth, onRetry, onError });
+});
+
+afterEach(() => {
+  scheduler.stop();
+  vi.useRealTimers();
+});
+
+describe('backoffDelay', () => {
+  it('doubles from one second up to a one-minute cap', () => {
+    expect([1, 2, 3, 6, 7, 20].map(backoffDelay)).toEqual([1000, 2000, 4000, 32000, 60000, 60000]);
+  });
+});
+
+describe('createSyncScheduler', () => {
+  it('runs on start, on request and on the interval, and does nothing once stopped', async () => {
+    scheduler.request();
+    await settle();
+    expect(run).not.toHaveBeenCalled();
+
+    scheduler.start();
+    await settle();
+    expect(run).toHaveBeenCalledTimes(1);
+    scheduler.request();
+    await settle();
+    expect(run).toHaveBeenCalledTimes(2);
+    await vi.advanceTimersByTimeAsync(SYNC_INTERVAL_MS);
+    expect(run).toHaveBeenCalledTimes(3);
+
+    scheduler.stop();
+    scheduler.request();
+    await vi.advanceTimersByTimeAsync(SYNC_INTERVAL_MS * 2);
+    expect(run).toHaveBeenCalledTimes(3);
+  });
+
+  it('backs off after failed runs and resets after a successful one', async () => {
+    run
+      .mockResolvedValueOnce('retry')
+      .mockResolvedValueOnce('retry')
+      .mockResolvedValueOnce('ok')
+      .mockResolvedValueOnce('retry');
+    scheduler.start();
+    await settle();
+    expect(onRetry).toHaveBeenLastCalledWith(1);
+
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(run).toHaveBeenCalledTimes(2);
+    expect(onRetry).toHaveBeenLastCalledWith(2);
+
+    await vi.advanceTimersByTimeAsync(1999);
+    expect(run).toHaveBeenCalledTimes(2);
+    await vi.advanceTimersByTimeAsync(1);
+    expect(run).toHaveBeenCalledTimes(3);
+
+    scheduler.request();
+    await settle();
+    expect(run).toHaveBeenCalledTimes(4);
+    expect(onRetry).toHaveBeenLastCalledWith(1);
+  });
+
+  it('runs at once on request instead of waiting out the backoff', async () => {
+    run.mockResolvedValueOnce('retry');
+    scheduler.start();
+    await settle();
+    scheduler.request();
+    await settle();
+    expect(run).toHaveBeenCalledTimes(2);
+
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(run).toHaveBeenCalledTimes(2);
+  });
+
+  it('queues one more run for any number of requests made during a run', async () => {
+    let finish!: (result: SyncResult) => void;
+    run.mockReturnValueOnce(new Promise((resolve) => (finish = resolve)));
+    scheduler.start();
+    await settle();
+    scheduler.request();
+    scheduler.request();
+    expect(run).toHaveBeenCalledTimes(1);
+
+    finish('ok');
+    await settle();
+    expect(run).toHaveBeenCalledTimes(2);
+  });
+
+  it('lets onAuth decide whether to run again, counting attempts per run', async () => {
+    run.mockResolvedValue('auth');
+    onAuth.mockImplementation(async (attempt) => attempt === 0);
+    scheduler.start();
+    await settle();
+    expect(run).toHaveBeenCalledTimes(2);
+    expect(onAuth.mock.calls).toEqual([[0], [1]]);
+
+    scheduler.request();
+    await settle();
+    expect(run).toHaveBeenCalledTimes(4);
+    expect(onAuth.mock.calls).toEqual([[0], [1], [0], [1]]);
+  });
+
+  it('reports a thrown error and waits for the next interval', async () => {
+    const boom = new Error('boom');
+    run.mockRejectedValueOnce(boom);
+    scheduler.start();
+    await settle();
+    expect(onError).toHaveBeenCalledWith(boom);
+
+    await vi.advanceTimersByTimeAsync(SYNC_INTERVAL_MS - 1);
+    expect(run).toHaveBeenCalledTimes(1);
+    await vi.advanceTimersByTimeAsync(1);
+    expect(run).toHaveBeenCalledTimes(2);
+  });
+});
