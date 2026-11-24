@@ -16,7 +16,7 @@ export interface AuthFormProps {
 /** Supabase Auth's default minimum. */
 export const MIN_PASSWORD_LENGTH = 6;
 
-export function AuthForm({ title = 'Sign in to Linkstash', onSignIn, onSignUp }: AuthFormProps) {
+export function AuthForm({ title = 'Sign in to Stow', onSignIn, onSignUp }: AuthFormProps) {
   const id = useId();
   const [mode, setMode] = useState<'signIn' | 'signUp'>('signIn');
   const [email, setEmail] = useState('');

@@ -1,5 +1,5 @@
 {
-  "name": "@linkstash/web",
+  "name": "@stow/web",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -13,8 +13,8 @@
     "check:pwa": "node scripts/check-pwa.mjs"
   },
   "dependencies": {
-    "@linkstash/core": "workspace:*",
-    "@linkstash/ui": "workspace:*",
+    "@stow/core": "workspace:*",
+    "@stow/ui": "workspace:*",
     "dexie": "^4.4.7",
     "dexie-react-hooks": "^4.4.0",
     "lucide-react": "^1.78.0",

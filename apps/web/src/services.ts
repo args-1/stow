@@ -1,11 +1,11 @@
 import {
-  createLinkstashClient,
+  createStowClient,
   fetchMetadata,
   isAuthRetryableFetchError,
   SupabaseRemote,
   SyncEngine,
   type SupabaseClient,
-} from '@linkstash/core';
+} from '@stow/core';
 import { createContext, use } from 'react';
 import { createActions, type Actions } from './actions';
 import { DexieLocalStore, openDb } from './db';
@@ -24,7 +24,7 @@ export interface Services {
 }
 
 export function createServices(config: WebConfig): Services {
-  const supabase = createLinkstashClient(config.supabaseUrl, config.supabasePublishableKey);
+  const supabase = createStowClient(config.supabaseUrl, config.supabasePublishableKey);
   const store = new DexieLocalStore(openDb());
   const engine = new SyncEngine(store, new SupabaseRemote(supabase), {
     onFatalError: (error) => toast.error(`A change could not be saved: ${errorText(error)}`),
@@ -55,7 +55,7 @@ export function createServices(config: WebConfig): Services {
   function subscribeChanges(userId: string, onChange: () => void): () => void {
     const filter = `user_id=eq.${userId}`;
     const channel = supabase
-      .channel(`linkstash:${userId}:${++channelCount}`)
+      .channel(`stow:${userId}:${++channelCount}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'links', filter }, onChange)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'categories', filter }, onChange)
       .subscribe();

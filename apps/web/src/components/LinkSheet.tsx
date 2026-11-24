@@ -1,5 +1,5 @@
-import type { Category, Link, ParsedLinkInput } from '@linkstash/core';
-import { LinkForm, linkFormValues } from '@linkstash/ui';
+import type { Category, Link, ParsedLinkInput } from '@stow/core';
+import { LinkForm, linkFormValues } from '@stow/ui';
 import { useState } from 'react';
 import type { Actions } from '../actions';
 import { toast } from '../toast';

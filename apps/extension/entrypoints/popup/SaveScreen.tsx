@@ -8,8 +8,8 @@ import {
   type Category,
   type Link,
   type SupabaseRemote,
-} from '@linkstash/core';
-import { buttonClass, ColorDot, LinkForm, linkFormValues, secondaryButtonClass } from '@linkstash/ui';
+} from '@stow/core';
+import { buttonClass, ColorDot, LinkForm, linkFormValues, secondaryButtonClass } from '@stow/ui';
 import { Check, Pencil, Star, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { activePage, type PageInfo } from '../../lib/page';
@@ -107,7 +107,7 @@ export function SaveScreen({ services }: { services: Services }) {
     );
   }
   if (view.status === 'unsupported') {
-    return <p className="text-sm">Linkstash can only save web pages (http and https).</p>;
+    return <p className="text-sm">Stow can only save web pages (http and https).</p>;
   }
   if (view.status === 'failed') {
     return (
@@ -130,7 +130,7 @@ export function SaveScreen({ services }: { services: Services }) {
       <div className="space-y-3">
         {removed && (
           <p role="status" className="text-sm text-slate-600 dark:text-slate-300">
-            Removed from Linkstash.
+            Removed from Stow.
           </p>
         )}
         <PagePreview url={page.url} title={pageTitle} description={page.description} faviconUrl={page.faviconUrl} />
@@ -178,7 +178,7 @@ export function SaveScreen({ services }: { services: Services }) {
     <div className="space-y-3">
       <p role="status" className="flex items-center gap-1.5 text-sm font-medium text-emerald-700 dark:text-emerald-400">
         <Check aria-hidden="true" className="size-4" />
-        Saved to Linkstash
+        Saved to Stow
       </p>
       <PagePreview url={link.url} title={displayTitle(link)} description={link.description} faviconUrl={link.favicon_url} />
       {(category || link.tags.length > 0) && (

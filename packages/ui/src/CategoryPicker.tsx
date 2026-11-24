@@ -1,4 +1,4 @@
-import { activeCategories, type Category } from '@linkstash/core';
+import { activeCategories, type Category } from '@stow/core';
 import { inputClass } from './styles';
 
 export interface CategoryPickerProps {

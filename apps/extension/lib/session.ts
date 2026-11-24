@@ -1,4 +1,4 @@
-import { isAuthRetryableFetchError, RemoteError, type SupabaseClient } from '@linkstash/core';
+import { isAuthRetryableFetchError, RemoteError, type SupabaseClient } from '@stow/core';
 
 /**
  * Whether the user is signed in. getSession() refreshes an expired token: if that fails for lack of a

@@ -1,5 +1,5 @@
-import { SyncEngine, type Session, type SupabaseClient } from '@linkstash/core';
-import { FakeRemote } from '@linkstash/core/testing';
+import { SyncEngine, type Session, type SupabaseClient } from '@stow/core';
+import { FakeRemote } from '@stow/core/testing';
 import { render } from '@testing-library/react';
 import type { ReactElement } from 'react';
 import { vi } from 'vitest';
@@ -51,7 +51,7 @@ let databases = 0;
 
 export function createFakeServices(session: Session | null = null) {
   const auth = createFakeAuth(session);
-  const store = new DexieLocalStore(openDb(`linkstash-test-${++databases}`));
+  const store = new DexieLocalStore(openDb(`stow-test-${++databases}`));
   const engine = new SyncEngine(store, new FakeRemote());
   const scheduler = { start: vi.fn(), stop: vi.fn(), request: vi.fn() };
   const services: Services = {

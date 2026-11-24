@@ -1,5 +1,5 @@
-import { RemoteError, type Link } from '@linkstash/core';
-import { makeLink } from '@linkstash/core/testing';
+import { RemoteError, type Link } from '@stow/core';
+import { makeLink } from '@stow/core/testing';
 import { describe, expect, it, vi } from 'vitest';
 import {
   handleMenuClick,
@@ -55,7 +55,7 @@ describe('handleMenuClick', () => {
       favicon_url: 'https://example.com/icon.png',
       category_id: null,
     });
-    expect(deps.flash).toHaveBeenCalledExactlyOnceWith(ok('Saved to Linkstash'));
+    expect(deps.flash).toHaveBeenCalledExactlyOnceWith(ok('Saved to Stow'));
     expect(fetchMetadata).not.toHaveBeenCalled();
   });
 
@@ -68,7 +68,7 @@ describe('handleMenuClick', () => {
     });
     await handleMenuClick(deps, { ...savePage, menuItemId: SAVE_LINK_ITEM, linkUrl: 'https://example.org/post' }, tab);
     expect(deps.describePage).not.toHaveBeenCalled();
-    expect(deps.flash).toHaveBeenCalledExactlyOnceWith(ok('Saved to Linkstash'));
+    expect(deps.flash).toHaveBeenCalledExactlyOnceWith(ok('Saved to Stow'));
     expect(fetchMetadata).toHaveBeenCalledWith('https://example.org/post');
     expect(deps.flash.mock.invocationCallOrder[0]).toBeLessThan(fetchMetadata.mock.invocationCallOrder[0]);
     expect(rows.get('new-id')).toMatchObject({
@@ -82,7 +82,7 @@ describe('handleMenuClick', () => {
   it('reports a page that is already saved without saving it again', async () => {
     const { deps, server } = setup({ saved: [makeLink({ url: 'https://example.com/page' })] });
     await handleMenuClick(deps, { ...savePage, pageUrl: 'https://example.com/page#comments' }, tab);
-    expect(deps.flash).toHaveBeenCalledExactlyOnceWith(ok('Already in Linkstash'));
+    expect(deps.flash).toHaveBeenCalledExactlyOnceWith(ok('Already in Stow'));
     expect(server.upsertLink).not.toHaveBeenCalled();
   });
 

@@ -1,9 +1,9 @@
-import { describeLocalStoreContract, makeCategory, makeLink } from '@linkstash/core/testing';
+import { describeLocalStoreContract, makeCategory, makeLink } from '@stow/core/testing';
 import { describe, expect, it } from 'vitest';
 import { DexieLocalStore, openDb } from './db';
 
 let dbCount = 0;
-const freshStore = () => new DexieLocalStore(openDb(`linkstash-test-${++dbCount}`));
+const freshStore = () => new DexieLocalStore(openDb(`stow-test-${++dbCount}`));
 
 describeLocalStoreContract('DexieLocalStore', freshStore);
 

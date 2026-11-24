@@ -7,7 +7,7 @@ import {
   type Link,
   type PageMetadataInput,
   type ParsedLinkInput,
-} from '@linkstash/core';
+} from '@stow/core';
 import { useId, useState, type FormEvent } from 'react';
 import { CategoryPicker } from './CategoryPicker';
 import { Field } from './Field';

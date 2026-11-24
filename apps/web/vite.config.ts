@@ -11,8 +11,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       manifest: {
         id: '/',
-        name: 'Linkstash',
-        short_name: 'Linkstash',
+        name: 'Stow',
+        short_name: 'Stow',
         description: 'Save, organize, and find your links on every device.',
         start_url: '/',
         scope: '/',

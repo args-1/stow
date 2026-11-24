@@ -21,7 +21,7 @@ import {
   type ParsedLinkInput,
   type Result,
   type SyncEngine,
-} from '@linkstash/core';
+} from '@stow/core';
 
 export type SaveLinkResult =
   | { status: 'saved'; link: Link; enrichment: Promise<void> }

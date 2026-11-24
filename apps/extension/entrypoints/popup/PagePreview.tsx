@@ -1,4 +1,4 @@
-import { faviconFallback, hostname } from '@linkstash/core';
+import { faviconFallback, hostname } from '@stow/core';
 
 export interface PagePreviewProps {
   url: string;

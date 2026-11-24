@@ -50,7 +50,7 @@ export function timeoutFetch(
 }
 
 // Not named `storage`: the extension build (WXT) adds an import for any bare identifier that shares a name with one of its APIs.
-export function createLinkstashClient(
+export function createStowClient(
   url: string,
   publishableKey: string,
   authStorage?: AuthStorage,

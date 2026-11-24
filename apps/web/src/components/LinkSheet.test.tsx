@@ -1,5 +1,5 @@
-import { MemoryLocalStore, SyncEngine } from '@linkstash/core';
-import { FakeRemote, makeCategory, makeLink } from '@linkstash/core/testing';
+import { MemoryLocalStore, SyncEngine } from '@stow/core';
+import { FakeRemote, makeCategory, makeLink } from '@stow/core/testing';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 import { createActions, type Actions } from '../actions';

@@ -1,4 +1,4 @@
-import { makeLink } from '@linkstash/core/testing';
+import { makeLink } from '@stow/core/testing';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { App } from './App';
@@ -22,7 +22,7 @@ describe('App', () => {
     const { services, auth, scheduler } = createFakeServices();
     renderWithServices(<App />, services);
 
-    await screen.findByRole('heading', { name: 'Sign in to Linkstash' });
+    await screen.findByRole('heading', { name: 'Sign in to Stow' });
     fillCredentials('me@example.com', 'secret1');
     fireEvent.click(screen.getByRole('button', { name: 'Sign in' }));
 
@@ -58,7 +58,7 @@ describe('App', () => {
     const { services, auth } = createFakeServices();
     renderWithServices(<App />, services);
 
-    await screen.findByRole('heading', { name: 'Sign in to Linkstash' });
+    await screen.findByRole('heading', { name: 'Sign in to Stow' });
     fillCredentials('me@example.com', 'secret1');
     fireEvent.click(screen.getByRole('button', { name: 'Sign in' }));
 
@@ -70,7 +70,7 @@ describe('App', () => {
     const { services, auth } = createFakeServices();
     renderWithServices(<App />, services);
 
-    await screen.findByRole('heading', { name: 'Sign in to Linkstash' });
+    await screen.findByRole('heading', { name: 'Sign in to Stow' });
     fireEvent.click(screen.getByRole('button', { name: 'Need an account? Create one' }));
     fillCredentials('new@example.com', 'secret1');
     fireEvent.click(screen.getByRole('button', { name: 'Create account' }));

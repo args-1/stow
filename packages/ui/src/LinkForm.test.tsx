@@ -1,4 +1,4 @@
-import { makeCategory } from '@linkstash/core/testing';
+import { makeCategory } from '@stow/core/testing';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { LinkForm } from './LinkForm';

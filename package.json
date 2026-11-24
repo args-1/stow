@@ -1,14 +1,14 @@
 {
-  "name": "linkstash",
+  "name": "stow",
   "private": true,
   "type": "module",
   "engines": { "node": "^22.22.2 || >=24.15.0" },
   "scripts": {
-    "dev": "pnpm --filter @linkstash/web dev",
-    "dev:ext": "pnpm --filter @linkstash/extension dev",
+    "dev": "pnpm --filter @stow/web dev",
+    "dev:ext": "pnpm --filter @stow/extension dev",
     "build": "pnpm -r --if-present build",
     "test": "pnpm -r --if-present test",
     "typecheck": "pnpm -r --if-present typecheck",
-    "test:live": "pnpm --filter @linkstash/core test:live"
+    "test:live": "pnpm --filter @stow/core test:live"
   }
 }

@@ -1,4 +1,4 @@
-export const SYNC_LOCK_NAME = 'linkstash-sync';
+export const SYNC_LOCK_NAME = 'stow-sync';
 
 /**
  * Runs `fn` while holding the cross-tab sync lock, so one tab syncs at a time. Without Web Locks it calls

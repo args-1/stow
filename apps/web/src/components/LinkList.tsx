@@ -1,4 +1,4 @@
-import { activeCategories, queryLinks, type Category, type Link, type LinkQuery } from '@linkstash/core';
+import { activeCategories, queryLinks, type Category, type Link, type LinkQuery } from '@stow/core';
 import { useMemo } from 'react';
 import type { Actions } from '../actions';
 import { errorText, toast } from '../toast';

@@ -7,14 +7,14 @@ export default defineConfig({
   autoIcons: { baseIconPath: 'assets/icon.svg' },
   vite: () => ({ plugins: [tailwindcss()] }),
   manifest: ({ browser }) => ({
-    name: 'Linkstash',
-    description: 'Save the current page or any link to your Linkstash library.',
+    name: 'Stow',
+    description: 'Save the current page or any link to your Stow library.',
     permissions: ['activeTab', 'contextMenus', 'scripting', 'storage'],
     commands: {
       _execute_action: { suggested_key: { default: 'Alt+Shift+S' } },
     },
     ...(browser === 'firefox'
-      ? { browser_specific_settings: { gecko: { id: 'linkstash@example.com', strict_min_version: '115.0' } } }
+      ? { browser_specific_settings: { gecko: { id: 'stow@example.com', strict_min_version: '115.0' } } }
       : {}),
   }),
 });

@@ -1,11 +1,11 @@
-import { parseLinkInput, type LinkInput } from '@linkstash/core';
+import { parseLinkInput, type LinkInput } from '@stow/core';
 import { describeError, enrichLink, saveLink, type SaveDeps } from './save';
 
-export const SAVE_LINK_ITEM = 'linkstash-save-link';
-export const SAVE_PAGE_ITEM = 'linkstash-save-page';
+export const SAVE_LINK_ITEM = 'stow-save-link';
+export const SAVE_PAGE_ITEM = 'stow-save-page';
 
-export const SIGN_IN_MESSAGE = 'Sign in from the Linkstash toolbar button, then try again.';
-export const SETUP_MESSAGE = 'This Linkstash build has no Supabase settings. See the README.';
+export const SIGN_IN_MESSAGE = 'Sign in from the Stow toolbar button, then try again.';
+export const SETUP_MESSAGE = 'This Stow build has no Supabase settings. See the README.';
 
 /** What the toolbar icon shows for a few seconds after a context-menu save: badge text, badge color and tooltip. */
 export interface Feedback {
@@ -73,8 +73,8 @@ export async function handleMenuClick(deps: MenuDeps, click: MenuClick, tab?: Me
     const parsed = parseLinkInput({ ...target.input, description });
     if (!parsed.ok) return deps.flash(failed(parsed.error));
     const result = await saveLink(services, parsed.value);
-    if (result.status === 'duplicate') return deps.flash(succeeded('Already in Linkstash'));
-    deps.flash(succeeded('Saved to Linkstash'));
+    if (result.status === 'duplicate') return deps.flash(succeeded('Already in Stow'));
+    deps.flash(succeeded('Saved to Stow'));
     await enrichLink(services, result.link);
   } catch (error) {
     deps.flash(failed(describeError(error)));

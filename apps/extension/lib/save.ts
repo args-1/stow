@@ -13,7 +13,7 @@ import {
   type PageMetadataInput,
   type ParsedLinkInput,
   type SupabaseRemote,
-} from '@linkstash/core';
+} from '@stow/core';
 
 export type LinkServer = Pick<SupabaseRemote, 'findLinkByUrlKey' | 'upsertLink'>;
 
@@ -28,7 +28,7 @@ export interface SaveResult {
   link: Link;
 }
 
-export const OFFLINE_MESSAGE = "Can't reach Linkstash. Check your connection and try again.";
+export const OFFLINE_MESSAGE = "Can't reach Stow. Check your connection and try again.";
 export const SESSION_EXPIRED_MESSAGE = 'Your session expired. Sign in again.';
 
 /** Saves a new link, unless the same page is already saved; then it returns that link. */

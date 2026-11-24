@@ -1,5 +1,5 @@
-import type { LinkQuery } from '@linkstash/core';
-import { makeCategory, makeLink } from '@linkstash/core/testing';
+import type { LinkQuery } from '@stow/core';
+import { makeCategory, makeLink } from '@stow/core/testing';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 import { dismiss, getToasts } from '../toast';

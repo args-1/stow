@@ -1,4 +1,4 @@
--- Linkstash schema. Run once per project: paste into the Supabase SQL editor and press Run.
+-- Stow schema. Run once per project: paste into the Supabase SQL editor and press Run.
 
 create table public.categories (
   id uuid primary key,

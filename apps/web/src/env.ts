@@ -1,4 +1,4 @@
-import { isHttpUrl } from '@linkstash/core';
+import { isHttpUrl } from '@stow/core';
 
 export interface WebConfig {
   supabaseUrl: string;

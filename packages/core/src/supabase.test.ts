@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createLinkstashClient, FETCH_TIMEOUT_MS, timeoutFetch } from './supabase';
+import { createStowClient, FETCH_TIMEOUT_MS, timeoutFetch } from './supabase';
 
 /** Like fetch against a server that never answers: settles only when its signal aborts. */
 const hangingFetch = vi.fn<typeof fetch>(
@@ -91,10 +91,10 @@ describe('timeoutFetch with AbortSignal.any', () => {
   });
 });
 
-describe('createLinkstashClient', () => {
+describe('createStowClient', () => {
   it('gives up on a database request that never answers', async () => {
     vi.stubGlobal('fetch', hangingFetch);
-    const client = createLinkstashClient('https://example.supabase.co', 'sb_publishable_test', undefined, {
+    const client = createStowClient('https://example.supabase.co', 'sb_publishable_test', undefined, {
       autoRefreshToken: false,
       fetchTimeoutMs: 20,
     });

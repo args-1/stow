@@ -1,5 +1,5 @@
-import { activeCategories, countByCategory, type Category, type Link, type LinkView } from '@linkstash/core';
-import { ColorDot } from '@linkstash/ui';
+import { activeCategories, countByCategory, type Category, type Link, type LinkView } from '@stow/core';
+import { ColorDot } from '@stow/ui';
 import { Archive, Inbox, Settings2, Star, type LucideIcon } from 'lucide-react';
 import { useMemo } from 'react';
 

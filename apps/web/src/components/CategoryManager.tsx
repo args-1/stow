@@ -7,8 +7,8 @@ import {
   type CategoryInput,
   type Link,
   type Result,
-} from '@linkstash/core';
-import { buttonClass, ColorDot, Field, inputClass, secondaryButtonClass } from '@linkstash/ui';
+} from '@stow/core';
+import { buttonClass, ColorDot, Field, inputClass, secondaryButtonClass } from '@stow/ui';
 import { Pencil, Trash2 } from 'lucide-react';
 import { useId, useMemo, useState, type FormEvent } from 'react';
 import type { Actions } from '../actions';

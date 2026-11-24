@@ -1,11 +1,11 @@
-import { isHttpUrl } from '@linkstash/core';
+import { isHttpUrl } from '@stow/core';
 
 export const DEFAULT_APP_URL = 'http://localhost:5173';
 
 export interface ExtensionConfig {
   supabaseUrl: string;
   supabasePublishableKey: string;
-  /** Where "Open Linkstash" points: the deployed PWA, or the web dev server. */
+  /** Where "Open Stow" points: the deployed PWA, or the web dev server. */
   appUrl: string;
 }
 

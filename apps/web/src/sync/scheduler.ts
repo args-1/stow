@@ -1,4 +1,4 @@
-import type { SyncResult } from '@linkstash/core';
+import type { SyncResult } from '@stow/core';
 
 export const SYNC_INTERVAL_MS = 60_000;
 const MAX_BACKOFF_MS = 60_000;

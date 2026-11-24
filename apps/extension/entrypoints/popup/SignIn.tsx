@@ -1,5 +1,5 @@
-import type { SupabaseClient } from '@linkstash/core';
-import { AuthForm, type AuthResult } from '@linkstash/ui';
+import type { SupabaseClient } from '@stow/core';
+import { AuthForm, type AuthResult } from '@stow/ui';
 
 const OFFLINE: AuthResult = { error: 'You are offline. Connect to the internet to sign in.' };
 

@@ -10,10 +10,10 @@ importers:
 
   apps/extension:
     dependencies:
-      '@linkstash/core':
+      '@stow/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@linkstash/ui':
+      '@stow/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       lucide-react:
@@ -56,10 +56,10 @@ importers:
 
   apps/web:
     dependencies:
-      '@linkstash/core':
+      '@stow/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@linkstash/ui':
+      '@stow/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       dexie:
@@ -151,7 +151,7 @@ importers:
 
   packages/ui:
     dependencies:
-      '@linkstash/core':
+      '@stow/core':
         specifier: workspace:*
         version: link:../core
     devDependencies:

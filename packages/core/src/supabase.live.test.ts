@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { fetchMetadata } from './metadata-client';
 import { createCategory, createLink, parseLinkInput, updateCategory, updateLink } from './model';
 import { CATEGORY_COLORS, type Category, type Link } from './schema';
-import { createLinkstashClient, type AuthStorage } from './supabase';
+import { createStowClient, type AuthStorage } from './supabase';
 import { SupabaseRemote } from './supabase-remote';
 
 function requireEnv(name: string): string {
@@ -30,7 +30,7 @@ const publishableKey = requireEnv('VITE_SUPABASE_PUBLISHABLE_KEY');
 const email = requireEnv('SMOKE_EMAIL');
 const password = requireEnv('SMOKE_PASSWORD');
 
-const client = createLinkstashClient(url, publishableKey, memoryStorage());
+const client = createStowClient(url, publishableKey, memoryStorage());
 const remote = new SupabaseRemote(client);
 const createdLinks: string[] = [];
 const createdCategories: string[] = [];
@@ -44,7 +44,7 @@ async function saveCategory(name: string): Promise<Category> {
 
 async function saveLink(categoryId: string): Promise<Link> {
   const parsed = parseLinkInput({
-    url: `https://example.com/linkstash-smoke/${crypto.randomUUID()}`,
+    url: `https://example.com/stow-smoke/${crypto.randomUUID()}`,
     tags: ['smoke'],
     categoryId,
   });
@@ -135,7 +135,7 @@ describe('live Supabase project', () => {
   });
 
   it('shows nothing to a signed-out client', async () => {
-    const anon = createLinkstashClient(url, publishableKey, memoryStorage());
+    const anon = createStowClient(url, publishableKey, memoryStorage());
     const { data } = await anon.from('links').select('id').limit(1);
     expect(data ?? []).toEqual([]);
     expect(await fetchMetadata(anon, 'https://example.com/')).toBeNull();

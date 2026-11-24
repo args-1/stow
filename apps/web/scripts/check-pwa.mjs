@@ -1,5 +1,5 @@
-// Checks the production build for what makes Linkstash installable and usable offline.
-// Run it after `vite build`: pnpm --filter @linkstash/web check:pwa
+// Checks the production build for what makes Stow installable and usable offline.
+// Run it after `vite build`: pnpm --filter @stow/web check:pwa
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';

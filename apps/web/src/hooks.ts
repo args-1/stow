@@ -1,4 +1,4 @@
-import type { Category, Link, Session, SupabaseClient } from '@linkstash/core';
+import type { Category, Link, Session, SupabaseClient } from '@stow/core';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import type { DexieLocalStore } from './db';

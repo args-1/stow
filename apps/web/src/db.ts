@@ -1,4 +1,4 @@
-import type { Category, Link, LocalChange, LocalStore, OutboxEntry, SyncTable } from '@linkstash/core';
+import type { Category, Link, LocalChange, LocalStore, OutboxEntry, SyncTable } from '@stow/core';
 import { Dexie, type EntityTable } from 'dexie';
 
 export interface MetaRow {
@@ -6,15 +6,15 @@ export interface MetaRow {
   value: string;
 }
 
-export type LinkstashDb = Dexie & {
+export type StowDb = Dexie & {
   links: EntityTable<Link, 'id'>;
   categories: EntityTable<Category, 'id'>;
   outbox: EntityTable<OutboxEntry, 'seq'>;
   meta: EntityTable<MetaRow, 'key'>;
 };
 
-export function openDb(name = 'linkstash'): LinkstashDb {
-  const db = new Dexie(name) as LinkstashDb;
+export function openDb(name = 'stow'): StowDb {
+  const db = new Dexie(name) as StowDb;
   db.version(1).stores({
     links: 'id',
     categories: 'id',
@@ -35,9 +35,9 @@ const OWNER_KEY = 'owner';
 const cursorKey = (table: SyncTable) => `cursor:${table}`;
 
 export class DexieLocalStore implements LocalStore {
-  readonly db: LinkstashDb;
+  readonly db: StowDb;
 
-  constructor(db: LinkstashDb) {
+  constructor(db: StowDb) {
     this.db = db;
   }
 

@@ -1,4 +1,4 @@
-import { createLinkstashClient, fetchMetadata, SupabaseRemote, type SupabaseClient } from '@linkstash/core';
+import { createStowClient, fetchMetadata, SupabaseRemote, type SupabaseClient } from '@stow/core';
 import { readConfig, type ExtensionConfig } from './config';
 import type { MenuServices } from './context-menu';
 import { hasSession } from './session';
@@ -21,7 +21,7 @@ export function getServices(): Services | null {
     } else {
       // No background refresh ticker: its storage read every 30 s would keep the MV3 service worker from ever going
       // idle. supabase-js and hasSession()'s getSession() refresh an expired token on demand.
-      const supabase = createLinkstashClient(config.supabaseUrl, config.supabasePublishableKey, extensionAuthStorage, {
+      const supabase = createStowClient(config.supabaseUrl, config.supabasePublishableKey, extensionAuthStorage, {
         autoRefreshToken: false,
       });
       services = {

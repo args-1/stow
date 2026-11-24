@@ -1,5 +1,5 @@
-import { RemoteError, type Link, type ParsedLinkInput } from '@linkstash/core';
-import { makeLink } from '@linkstash/core/testing';
+import { RemoteError, type Link, type ParsedLinkInput } from '@stow/core';
+import { makeLink } from '@stow/core/testing';
 import { describe, expect, it, vi } from 'vitest';
 import {
   deleteLink,

@@ -24,7 +24,7 @@ function flash(tabId: number | undefined, feedback: Feedback): void {
       timers.delete(tabId);
       Promise.all([
         browser.action.setBadgeText({ ...target, text: '' }),
-        browser.action.setTitle({ ...target, title: 'Linkstash' }),
+        browser.action.setTitle({ ...target, title: 'Stow' }),
       ]).catch(ignoreClosedTab);
     }, FEEDBACK_MS),
   );
@@ -37,13 +37,13 @@ export default defineBackground(() => {
     await browser.contextMenus.removeAll();
     browser.contextMenus.create({
       id: SAVE_LINK_ITEM,
-      title: 'Save link to Linkstash',
+      title: 'Save link to Stow',
       contexts: ['link'],
       targetUrlPatterns: WEB_PAGES,
     });
     browser.contextMenus.create({
       id: SAVE_PAGE_ITEM,
-      title: 'Save page to Linkstash',
+      title: 'Save page to Stow',
       contexts: ['page'],
       documentUrlPatterns: WEB_PAGES,
     });

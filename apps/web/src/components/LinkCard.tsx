@@ -1,5 +1,5 @@
-import { displayTitle, faviconFallback, hostname, type Category, type Link } from '@linkstash/core';
-import { ColorDot } from '@linkstash/ui';
+import { displayTitle, faviconFallback, hostname, type Category, type Link } from '@stow/core';
+import { ColorDot } from '@stow/ui';
 import { Archive, ArchiveRestore, Pencil, Star, Trash2 } from 'lucide-react';
 import { IconButton } from './IconButton';
 

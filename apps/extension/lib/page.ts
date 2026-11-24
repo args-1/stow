@@ -1,4 +1,4 @@
-import { isHttpUrl, type PageMetadataInput } from '@linkstash/core';
+import { isHttpUrl, type PageMetadataInput } from '@stow/core';
 import { browser } from 'wxt/browser';
 
 export interface PageInfo extends PageMetadataInput {

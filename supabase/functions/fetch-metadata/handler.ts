@@ -86,7 +86,7 @@ async function readPage(url: string, fetch: FetchLike, timeoutMs: number, maxByt
         signal: controller.signal,
         headers: {
           Accept: 'text/html,application/xhtml+xml',
-          'User-Agent': 'Mozilla/5.0 (compatible; LinkstashBot/1.0)',
+          'User-Agent': 'Mozilla/5.0 (compatible; StowBot/1.0)',
         },
       });
       if (res.status >= 300 && res.status < 400) {

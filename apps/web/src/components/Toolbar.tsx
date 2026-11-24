@@ -1,5 +1,5 @@
-import type { LinkSort } from '@linkstash/core';
-import { inputClass } from '@linkstash/ui';
+import type { LinkSort } from '@stow/core';
+import { inputClass } from '@stow/ui';
 import { Search } from 'lucide-react';
 
 const SORTS: { value: LinkSort; label: string }[] = [

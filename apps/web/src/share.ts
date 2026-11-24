@@ -1,4 +1,4 @@
-import { normalizeUrl } from '@linkstash/core';
+import { normalizeUrl } from '@stow/core';
 
 export interface SharedLink {
   url: string;

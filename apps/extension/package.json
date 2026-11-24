@@ -1,5 +1,5 @@
 {
-  "name": "@linkstash/extension",
+  "name": "@stow/extension",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -12,8 +12,8 @@
     "postinstall": "wxt prepare"
   },
   "dependencies": {
-    "@linkstash/core": "workspace:*",
-    "@linkstash/ui": "workspace:*",
+    "@stow/core": "workspace:*",
+    "@stow/ui": "workspace:*",
     "lucide-react": "^1.78.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"

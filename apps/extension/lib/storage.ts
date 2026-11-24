@@ -1,4 +1,4 @@
-import type { AuthStorage } from '@linkstash/core';
+import type { AuthStorage } from '@stow/core';
 import { browser } from 'wxt/browser';
 
 /** Keeps the Supabase session in extension storage, which the popup and the background worker share. */

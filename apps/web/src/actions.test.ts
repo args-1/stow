@@ -1,5 +1,5 @@
-import { MemoryLocalStore, SyncEngine, type Clock, type PageMetadataInput, type ParsedLinkInput } from '@linkstash/core';
-import { FakeRemote } from '@linkstash/core/testing';
+import { MemoryLocalStore, SyncEngine, type Clock, type PageMetadataInput, type ParsedLinkInput } from '@stow/core';
+import { FakeRemote } from '@stow/core/testing';
 import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 import { createActions, type Actions, type SaveLinkResult } from './actions';
 

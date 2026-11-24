@@ -1,4 +1,4 @@
-import type { Link, LinkQuery, LinkSort, LinkView } from '@linkstash/core';
+import type { Link, LinkQuery, LinkSort, LinkView } from '@stow/core';
 import { Bookmark, LogOut, Plus } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { CategoryManager } from './components/CategoryManager';
@@ -27,7 +27,7 @@ function Brand({ className = '' }: { className?: string }) {
   return (
     <p className={`flex items-center gap-2 font-semibold ${className}`}>
       <Bookmark aria-hidden="true" className="size-5 text-indigo-600 dark:text-indigo-400" />
-      Linkstash
+      Stow
     </p>
   );
 }

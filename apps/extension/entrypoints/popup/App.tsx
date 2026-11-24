@@ -1,4 +1,4 @@
-import type { Session, SupabaseClient } from '@linkstash/core';
+import type { Session, SupabaseClient } from '@stow/core';
 import { Bookmark, ExternalLink } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { getServices, type Services } from '../../lib/services';
@@ -20,7 +20,7 @@ function useSession(supabase: SupabaseClient): SessionState {
 function SetupNotice() {
   return (
     <div className="space-y-2 text-sm">
-      <h1 className="font-semibold">Connect Linkstash to Supabase</h1>
+      <h1 className="font-semibold">Connect Stow to Supabase</h1>
       <p>
         This build has no Supabase settings. Copy <code>apps/extension/.env.example</code> to{' '}
         <code>apps/extension/.env</code>, set <code>WXT_SUPABASE_URL</code> and <code>WXT_SUPABASE_PUBLISHABLE_KEY</code>,
@@ -41,7 +41,7 @@ function Header({ appUrl, onSignOut }: HeaderProps) {
     <header className="mb-4 flex items-center gap-3">
       <p className="flex items-center gap-2 text-sm font-semibold text-indigo-600 dark:text-indigo-400">
         <Bookmark aria-hidden="true" className="size-4" />
-        Linkstash
+        Stow
       </p>
       <a
         href={appUrl}
@@ -49,7 +49,7 @@ function Header({ appUrl, onSignOut }: HeaderProps) {
         rel="noreferrer"
         className="ml-auto inline-flex items-center gap-1 text-xs text-slate-600 hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400"
       >
-        Open Linkstash
+        Open Stow
         <ExternalLink aria-hidden="true" className="size-3.5" />
       </a>
       {onSignOut && (

@@ -1,4 +1,4 @@
-import { buttonClass } from '@linkstash/ui';
+import { buttonClass } from '@stow/ui';
 import { useCallback, useState, type ReactNode } from 'react';
 import { AuthScreen } from './components/AuthScreen';
 import { Toaster } from './components/Toaster';

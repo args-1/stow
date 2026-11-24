@@ -1,5 +1,5 @@
-import type { SupabaseClient } from '@linkstash/core';
-import { AuthForm, type AuthResult } from '@linkstash/ui';
+import type { SupabaseClient } from '@stow/core';
+import { AuthForm, type AuthResult } from '@stow/ui';
 import { Bookmark } from 'lucide-react';
 
 const OFFLINE: AuthResult = { error: 'You are offline. Connect to the internet to sign in.' };
@@ -28,7 +28,7 @@ export function AuthScreen({ supabase, online }: AuthScreenProps) {
       <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
         <p className="mb-4 flex items-center gap-2 text-sm font-semibold text-indigo-600 dark:text-indigo-400">
           <Bookmark aria-hidden="true" className="size-4" />
-          Linkstash
+          Stow
         </p>
         <AuthForm onSignIn={signIn} onSignUp={signUp} />
       </div>

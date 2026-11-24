@@ -1,5 +1,5 @@
-import { CATEGORY_COLORS } from '@linkstash/core';
-import { labelClass } from '@linkstash/ui';
+import { CATEGORY_COLORS } from '@stow/core';
+import { labelClass } from '@stow/ui';
 import { useId } from 'react';
 
 const COLOR_NAMES: Record<(typeof CATEGORY_COLORS)[number], string> = {

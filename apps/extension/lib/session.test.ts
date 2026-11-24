@@ -1,5 +1,5 @@
-import { RemoteError, type Session } from '@linkstash/core';
-import { AuthApiError, AuthRetryableFetchError } from '@linkstash/core/testing';
+import { RemoteError, type Session } from '@stow/core';
+import { AuthApiError, AuthRetryableFetchError } from '@stow/core/testing';
 import { describe, expect, it } from 'vitest';
 import { hasSession } from './session';
 

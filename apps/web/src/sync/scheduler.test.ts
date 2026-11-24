@@ -1,4 +1,4 @@
-import type { SyncResult } from '@linkstash/core';
+import type { SyncResult } from '@stow/core';
 import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 import { FakeLockManager } from '../test/fakeLocks';
 import { backoffDelay, createSyncScheduler, SYNC_INTERVAL_MS, type SyncScheduler } from './scheduler';

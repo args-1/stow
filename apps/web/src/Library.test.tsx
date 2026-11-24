@@ -1,4 +1,4 @@
-import { makeCategory, makeLink } from '@linkstash/core/testing';
+import { makeCategory, makeLink } from '@stow/core/testing';
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Library } from './Library';
